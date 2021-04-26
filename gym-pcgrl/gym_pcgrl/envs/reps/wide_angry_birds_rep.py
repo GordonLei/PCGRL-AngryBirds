@@ -72,6 +72,52 @@ class WideAngryBirdsRepresentation(Representation):
             "map": self._map.copy()
         }
 
+    '''
+    taken from https://stackoverflow.com/a/65808327
+    '''
+    def _pretty_print(self,current, parent=None, index=-1, depth=0):
+        for i, node in enumerate(current):
+            self._pretty_print(node, current, i, depth + 1)
+        if parent is not None:
+            if index == 0:
+                parent.text = '\n' + ('\t' * depth)
+            else:
+                parent[index - 1].tail = '\n' + ('\t' * depth)
+            if index == len(parent) - 1:
+                current.tail = '\n' + ('\t' * (depth - 1))
+
+    """ 
+    Translate lowermost leftmost corner of block when placed in Python to Unity's center of the block placement
+    """
+    def MapToUnity(self,typeOfBlock):
+        #print("TYPE: ", typeOfBlock)
+
+        #with reference to leftmost corner and objects placed on there 
+        if(typeOfBlock == "RectTiny"):
+            return (0.25,-0.125)
+        elif(typeOfBlock == "SquareHole"): 
+            return (0.4,-0.4)
+        elif(typeOfBlock == "RectSmall"): 
+            return (0.4,-0.125)
+        elif(typeOfBlock == "RectMedium"):
+            return (.85,-0.125)
+        elif(typeOfBlock == "RectBig"):
+            return (1.00,-0.125)
+        elif(typeOfBlock == "RectFat"):
+            return (0.5,-0.25)
+    
+        elif(typeOfBlock == "TNT"):
+            return (0.333,-0.333)
+        elif(typeOfBlock == "Pig"):
+            return (0.25,-0.25)
+        elif(typeOfBlock == "Platform"):
+            return (0.333,-0.333)
+        else:
+            print("ERROR HAS OCCURED WHEN TRANSLATING MAP TO UNITY", typeOfBlock)
+            return (0,0)
+
+
+
     """
     Create the XML level to be used 
     """
@@ -79,17 +125,20 @@ class WideAngryBirdsRepresentation(Representation):
         blocks_array = []
         tnt_array = []
         pigs_array = []
+        platform_array = []
         birds_array = ['BirdRed']
         corners = [2,3,9,11,15,20]
-        block_type = ["RectTiny", "RectHole", "RectSmall", "RectMedium", "RectLarge", "RectFat"]
+        block_type = ["RectTiny", "SquareHole", "RectSmall", "RectMedium", "RectBig", "RectFat"]
         pigs_num = 28
         tnt_num = 24
+        platform_num = 29
         # map looks like this 
         # top-most row is the top most level
         # bottom-most row is the bottom most level
         # 0,0 is upper left corner 
         x_length = len(map[0])
         y_length = len(map)
+        
 
         #each row is a y value
         #each col is a x value
@@ -99,15 +148,20 @@ class WideAngryBirdsRepresentation(Representation):
                 #to iterate the map, the x value is the first index. the y value is the second index 
                 if(map[y][x] in corners):
                     b_type =  block_type[corners.index(map[y][x])]
+                    #print("ADDED: ", b_type)
                     blocks_array.append([b_type,y,x])
                 elif map[y][x] == pigs_num:
                     pigs_array.append([y,x])
                 elif map[y][x] == tnt_num:
                     tnt_array.append([y,x])
+                elif map[y][x] == platform_num:
+                    platform_array.append([y,x])
+        
+        #print("BLOCK ARRAY: \n", blocks_array)
         
         
-        
-        root = ET.Element('Level'.strip('\x00'))
+        root = ET.Element('Level')
+        root.set('width','2')
 
         camera = ET.Element('Camera')
         #fill in camera stuff
@@ -122,7 +176,7 @@ class WideAngryBirdsRepresentation(Representation):
         root.append(birds)
         for each in birds_array:
             temp_bird = ET.SubElement(birds, 'Bird')
-            temp_bird.set('type', str(each[0]))
+            temp_bird.set('type', str(each))
             #fill in temp_bird
 
             #end
@@ -136,42 +190,105 @@ class WideAngryBirdsRepresentation(Representation):
 
         gameObjects = ET.Element('GameObjects')
         root.append(gameObjects)
+
+        #in the Unity:
+        # the floor is y = -3.25
+        # the ceiling is y = 2.0 
+        # HEIGHT is 5.25
+        
+        # the leftmost wall is x = -4
+        # the rightmost wall is x = 11
+        # WIDTH is 15
+
+        #in the map:
+        # width = 36
+        # height = 21
+
+        #subtract to mirror the image as first row in the map is the top-most row in the level
+        map_width = 15
+        map_height = 5.25
+        #this is to account that blocks can go beyond x=0 or y=0 as origin is not the corner of the level
+        
+        x_max_from_origin = 4
+        y_max_from_origin = 3.25
+
         for each in blocks_array:
             temp_block = ET.SubElement(gameObjects, 'Block')
+
             temp_block.set('type', str(each[0]))
             temp_block.set('material', 'wood')
-            temp_block.set('x', str(each[2]/2))
-            temp_block.set('y', str(each[1]/4))
+            #HAVE TO ACCOUNT THAT YOU PLACE THE BLOCK BASED ON THE CENTER OF THE BLOCK IN UNITY
+            #MapToUnity(typeOfBlock) will return how to move leftmost lowermost corner to center of the block
+            
+            xy_diff = self.MapToUnity(str(each[0]))
+            
+            x_diff = x_max_from_origin + xy_diff[0]
+            y_diff = y_max_from_origin + xy_diff[1]
+
+            temp_block.set('x', str(each[2]/2 - x_diff ))
+            temp_block.set('y', str(map_height - each[1]/4 - y_diff))
+
+            #print(str(each[0]), xy_diff[0], xy_diff[1], each[2]/2 - x_diff, map_height - each[1]/4 - y_diff)
+            #print(map_height, each[1]/4,y_diff, "y_diff: ",3.25+xy_diff[1])
+
             temp_block.set('rotation', "0")
             #fill in temp_block
 
             #end
         for each in pigs_array:
+            #HAVE TO ACCOUNT THAT YOU PLACE THE BLOCK BASED ON THE CENTER OF THE BLOCK IN UNITY
+            #MapToUnity(typeOfBlock) will return how to move leftmost lowermost corner to center of the block
+            xy_diff = self.MapToUnity("Pig")
+
+            x_diff = x_max_from_origin + xy_diff[0]
+            y_diff = y_max_from_origin + xy_diff[1]
+
             temp_pig = ET.SubElement(gameObjects, 'Pig')
             temp_pig.set('type', 'BasicSmall')
-            temp_pig.set('x', str(each[1]/2))
-            temp_pig.set('y', str(each[0]/4))
+            temp_pig.set('x', str(each[1]/2 - x_diff ))
+            temp_pig.set('y', str(map_height - each[0]/4 - y_diff ))
             temp_pig.set('rotation', '0')
             #fill in temp_pig
 
             #end
         for each in tnt_array:
+            #HAVE TO ACCOUNT THAT YOU PLACE THE BLOCK BASED ON THE CENTER OF THE BLOCK IN UNITY
+            #MapToUnity(typeOfBlock) will return how to move leftmost lowermost corner to center of the block
+            xy_diff = self.MapToUnity("TNT")
+            
+            x_diff = x_max_from_origin + xy_diff[0]
+            y_diff = y_max_from_origin + xy_diff[1]
+
             temp_tnt = ET.SubElement(gameObjects, 'TNT')
-            temp_tnt .set('x', str(each[1]/2))
-            temp_tnt .set('y', str(each[0]/4))
+            temp_tnt .set('x', str(each[1]/2 - x_diff ))
+            temp_tnt .set('y', str(map_height - each[0]/4 - y_diff ))
             temp_tnt .set('rotation', '0')
             #fill in temp_pig
 
             #end
-
-
         
+        '''
+        for each in platform_array:
+            #<Platform type="Platform"  x="2"  y="-1" scaleX="5.5" scaleY="8"/>
+            #xy_diff = self.MapToUnity("Platform")
+
+            #x_diff = x_max_from_origin + xy_diff[0]
+            #y_diff = y_max_from_origin + xy_diff[1]
+
+            temp_platform = ET.SubElement(gameObjects, 'Platform')
+            temp_platform.set('x', str(each[1]/2 - x_diff ))
+            temp_platform.set('y', str(map_height - each[0]/4 - y_diff ))
+            temp_platform.set('scaleX', '5.5')
+            temp_platform.set('scaleY', '8')
+        '''
 
 
+
+        self._pretty_print(root) #make the XML prettier
         tree = ET.ElementTree(root)
         path = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\Assets\\StreamingAssets\\Levels\\level-6.xml"
         with open(path, 'wb') as files:
-            files.write(b'<?xml version="1.0" encoding="UTF-16"?>')
+            files.write(b'<?xml version="1.0" encoding="UTF-16"?>\n')
             tree.write(files,xml_declaration=False,encoding='utf-8')
 
 
@@ -188,7 +305,7 @@ class WideAngryBirdsRepresentation(Representation):
         change = [0,1][self._map[action[1]][action[0]] != action[2]]
         self._map[action[1]][action[0]] = action[2]
 
-        print("CURRENT MAP:\n", self._map)
+        #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)
 
 

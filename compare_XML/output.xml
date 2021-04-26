@@ -2,28 +2,16 @@
 <Level width="1">
   <Camera x="0" y="0" minWidth="0" maxWidth="0" />
   <Birds>
+    <Bird type="bird_0" />
     <Slingshot x="0" y="0" />
     <GameObjects>
-      <Block type="RectTiny(Clone)" material="wood" x="8" y="-0.001923529" rotation="0" />
-      <Block type="RectMedium(Clone)" material="wood" x="10.5" y="-0.001923529" rotation="0" />
-      <Block type="RectMedium(Clone)" material="wood" x="14.98727" y="-0.01599871" rotation="357.4602" />
-      <Block type="RectTiny(Clone)" material="wood" x="13" y="0.2480765" rotation="0" />
-      <Block type="RectTiny(Clone)" material="wood" x="5.5" y="0.4980765" rotation="0" />
-      <Block type="RectTiny(Clone)" material="wood" x="13" y="0.4980765" rotation="0" />
-      <Block type="RectSmall(Clone)" material="wood" x="16.50253" y="0.5246623" rotation="350.5497" />
-      <Pig type="BasicSmall(Clone)" x="16.04365" y="0.2501068" rotation="350.1447" />
-      <Pig type="BasicSmall(Clone)" x="15" y="1.748038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="13" y="2.748038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="9.5" y="3.748038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="0" y="4.498038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="13" y="5.748038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="1.5" y="6.248038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="5.5" y="7.498038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="14" y="8.998038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="14" y="9.498038" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="5.5" y="10.49804" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="18.5" y="10.99804" rotation="0" />
-      <Pig type="BasicSmall(Clone)" x="7" y="11.74804" rotation="0" />
+      <Block type="RectMedium(Clone)" material="wood" x="5.951686" y="-3.375319" rotation="0.001899399" />
+      <Block type="RectTiny(Clone)" material="wood" x="2.75" y="-3.370461" rotation="0" />
+      <Block type="RectTiny(Clone)" material="wood" x="9.753214" y="-3.375377" rotation="0.007816439" />
+      <Block type="RectSmall(Clone)" material="wood" x="7.872118" y="-3.375341" rotation="0.003596191" />
+      <Block type="RectTiny(Clone)" material="wood" x="-3.25" y="-3.375234" rotation="0.004829097" />
+      <Block type="SquareHole(Clone)" material="wood" x="-0.4587528" y="-3.065005" rotation="270" />
+      <Block type="RectTiny(Clone)" material="wood" x="17.7216" y="-3.00823" rotation="0" />
     </GameObjects>
   </Birds>
 </Level>

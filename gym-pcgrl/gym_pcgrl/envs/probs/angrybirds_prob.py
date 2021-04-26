@@ -20,27 +20,19 @@ class AngryBirdsProblem(Problem):
 
 
         # the floor is y = -3.25
-        # the ceiling is y = 9.0 but you will probably only need around y = 5.0
+        # the ceiling is y = 2.0 
         
-        # the leftmost wall is x = -7.00
-        # the rightmost wall is x = 14.00
+        # the leftmost wall is x = -4
+        # the rightmost wall is x = 11.00
 
         #a platform is around .5 radius so it's a 1x1 block
         #FAT blocks are .5; regular are .25 radius
 
-        # x is 21 wide so you probably want around 42 for width
-
-        # each tile is .25 so do 21*4 = 84
-
-        #increment by 1 so its actual width?
-
-        self._width = 42
+        # x is 15 wide so you probably want around 18*2 for width
+        self._width = 30 #amount of .5 segments
         
-        # y is around 12.25 tall so 24.50 for height. round it to 25
-        #each tile is .25 so do 12.25*4 = 49
-
-        #increment by 1 so its actual height?
-        self._height = 49
+        # y is around 5.25 tall so 5.25*4 for height
+        self._height = 21 #amount of .25 segments
 
         # a dictionary that contains all of the possible tile types
         self._tiles = self.get_tile_types()
@@ -283,19 +275,19 @@ class AngryBirdsProblem(Problem):
 
             sb = subprocess.Popen(script1)
             time.sleep(20)
-            print("SCRIPT 1: ", script1)
+            #print("SCRIPT 1: ", script1)
             sb.terminate()
-            print("TERMINATED 1")
+            #print("TERMINATED 1")
             sb = subprocess.Popen(script2)
             
             time.sleep(7)
-            print("SCRIPT 2: ", script2)
+            #print("SCRIPT 2: ", script2)
             sb.terminate()
-            print("TERMINATED 2")
+            #print("TERMINATED 2")
             #os.system("TASKKILL /F /IM C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe")
 
             parser = ET.XMLParser(encoding="utf-8")
-            print(output_path)
+            #print(output_path)
             output_XML = ET.parse(output_path, parser= parser)
 
             input_root = input_XML.getroot()
@@ -325,18 +317,19 @@ class AngryBirdsProblem(Problem):
             for i in range(len (input_root[1][GO_input_index] )):
                 input_obj = input_root[1][GO_input_index][i].attrib
                 output_obj = output_root[1][GO_input_index][i].attrib
-                print("x = ", input_obj['x'], output_obj['x'])
-                print("y = ", input_obj['y'], output_obj['y'])
+                #print("x = ", input_obj['x'], output_obj['x'])
+                #print("y = ", input_obj['y'], output_obj['y'])
                 if( abs( float(input_obj['x']) - float(output_obj['x'])) >= x_threshold  
                     or abs( float(input_obj['y']) - float(output_obj['y'])) >= y_threshold):
                     return 0 
                 else:
-                    print("COMPARED")
+                    print("stable level")
             #print(input_root[1][5][0].attrib)
 
             # 1 means this is stable? 
             return 1
         except:
+            print("PROBABLY FAILED COMPILING .EXE")
             pass
 
     """
