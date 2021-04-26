@@ -34,13 +34,13 @@ class AngryBirdsProblem(Problem):
 
         #increment by 1 so its actual width?
 
-        self._width = 10#42
+        self._width = 42
         
         # y is around 12.25 tall so 24.50 for height. round it to 25
         #each tile is .25 so do 12.25*4 = 49
 
         #increment by 1 so its actual height?
-        self._height = 10#49
+        self._height = 49
 
         # a dictionary that contains all of the possible tile types
         self._tiles = self.get_tile_types()
@@ -261,13 +261,37 @@ class AngryBirdsProblem(Problem):
             input_XML = ET.parse(input_path, parser= parser)
 
             #run the Unity .exe
-            script = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
+            #script = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
+            
+            #script_pre = '''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild'''
+            #script_after = "C:/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"
 
+            #script = script_pre + " && " + script_after
+            #script='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild && C:/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe'''
+            
+            #script='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild; "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"'''
+            script1='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild''' 
+            script2 ='''"/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"'''
             #os.system(script)
             #sts = subprocess.call(script, shell=True)
-            sb = subprocess.Popen(script)
-            time.sleep(5)
+            #print(script)
+            #sb = subprocess.Popen(script,shell=True)
+            #sb = subprocess.call(script,shell=True)
+
+            script1 = "D:\\Unity\\2017.3.1f1\\Editor\\Unity.exe -quit -batchmode -buildTarget win64 -projectPath C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds -executeMethod MyEditorScript.PerformBuild"
+            script2 = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
+
+            sb = subprocess.Popen(script1)
+            time.sleep(20)
+            print("SCRIPT 1: ", script1)
             sb.terminate()
+            print("TERMINATED 1")
+            sb = subprocess.Popen(script2)
+            
+            time.sleep(7)
+            print("SCRIPT 2: ", script2)
+            sb.terminate()
+            print("TERMINATED 2")
             #os.system("TASKKILL /F /IM C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe")
 
             parser = ET.XMLParser(encoding="utf-8")

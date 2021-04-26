@@ -2,6 +2,7 @@ from gym_pcgrl.envs.reps.representation import Representation
 from PIL import Image
 from gym import spaces
 import numpy as np
+import xml.etree.ElementTree as ET
 
 """
 The wide representation where the agent can pick the tile position and tile value at each update.
@@ -72,6 +73,109 @@ class WideAngryBirdsRepresentation(Representation):
         }
 
     """
+    Create the XML level to be used 
+    """
+    def writeXML(self, map):
+        blocks_array = []
+        tnt_array = []
+        pigs_array = []
+        birds_array = ['BirdRed']
+        corners = [2,3,9,11,15,20]
+        block_type = ["RectTiny", "RectHole", "RectSmall", "RectMedium", "RectLarge", "RectFat"]
+        pigs_num = 28
+        tnt_num = 24
+        # map looks like this 
+        # top-most row is the top most level
+        # bottom-most row is the bottom most level
+        # 0,0 is upper left corner 
+        x_length = len(map[0])
+        y_length = len(map)
+
+        #each row is a y value
+        #each col is a x value
+        for y in range(y_length):
+            for x in range(x_length):
+                #print("COORDS: ",x,y, "max:", x_length, y_length)
+                #to iterate the map, the x value is the first index. the y value is the second index 
+                if(map[y][x] in corners):
+                    b_type =  block_type[corners.index(map[y][x])]
+                    blocks_array.append([b_type,y,x])
+                elif map[y][x] == pigs_num:
+                    pigs_array.append([y,x])
+                elif map[y][x] == tnt_num:
+                    tnt_array.append([y,x])
+        
+        
+        
+        root = ET.Element('Level'.strip('\x00'))
+
+        camera = ET.Element('Camera')
+        #fill in camera stuff
+        camera.set('x', '0')
+        camera.set('y', '0')
+        camera.set('minWidth', '20')
+        camera.set('maxWidth', '25')
+        #END
+        root.append(camera)
+
+        birds = ET.Element('Birds')
+        root.append(birds)
+        for each in birds_array:
+            temp_bird = ET.SubElement(birds, 'Bird')
+            temp_bird.set('type', str(each[0]))
+            #fill in temp_bird
+
+            #end
+        
+        slingshot = ET.Element('Slingshot')
+        #fill in slingshot stuff
+        slingshot.set('x', '-7')
+        slingshot.set('y', '-2.5')
+        #END
+        root.append(slingshot)
+
+        gameObjects = ET.Element('GameObjects')
+        root.append(gameObjects)
+        for each in blocks_array:
+            temp_block = ET.SubElement(gameObjects, 'Block')
+            temp_block.set('type', str(each[0]))
+            temp_block.set('material', 'wood')
+            temp_block.set('x', str(each[2]/2))
+            temp_block.set('y', str(each[1]/4))
+            temp_block.set('rotation', "0")
+            #fill in temp_block
+
+            #end
+        for each in pigs_array:
+            temp_pig = ET.SubElement(gameObjects, 'Pig')
+            temp_pig.set('type', 'BasicSmall')
+            temp_pig.set('x', str(each[1]/2))
+            temp_pig.set('y', str(each[0]/4))
+            temp_pig.set('rotation', '0')
+            #fill in temp_pig
+
+            #end
+        for each in tnt_array:
+            temp_tnt = ET.SubElement(gameObjects, 'TNT')
+            temp_tnt .set('x', str(each[1]/2))
+            temp_tnt .set('y', str(each[0]/4))
+            temp_tnt .set('rotation', '0')
+            #fill in temp_pig
+
+            #end
+
+
+        
+
+
+        tree = ET.ElementTree(root)
+        path = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\Assets\\StreamingAssets\\Levels\\level-6.xml"
+        with open(path, 'wb') as files:
+            files.write(b'<?xml version="1.0" encoding="UTF-16"?>')
+            tree.write(files,xml_declaration=False,encoding='utf-8')
+
+
+    """
     Update the wide representation with the input action
 
     Parameters:
@@ -85,6 +189,8 @@ class WideAngryBirdsRepresentation(Representation):
         self._map[action[1]][action[0]] = action[2]
 
         print("CURRENT MAP:\n", self._map)
+        self.writeXML(self._map)
+
 
         return change, action[0], action[1]
     
@@ -183,7 +289,7 @@ class WideAngryBirdsRepresentation(Representation):
                 if(map[y][x] >= 2 and map[y][x] <= 24):
                     coords.append([map[y][x],y,x])
         
-        print("COORDS: \n", coords)
+        #print("COORDS: \n", coords)
 
         for each in coords:
             #each[0] is type
@@ -191,14 +297,14 @@ class WideAngryBirdsRepresentation(Representation):
             #each[2] is the col in the map (so width)
             if(self.check_collision(each[0],each[1],each[2],map)):
                 #just remove the block if it collides with something
-                print("REMOVED BLOCK")
+                #print("REMOVED BLOCK")
                 map[each[1]][each[2]] = 0
                 continue 
             #if there is no collission, fill it in
             else:
                 y = each[1]
                 x = each[2]
-                print("FILL-IN @", y,x, "BLOCK TYPE: ", each[0])
+                #print("FILL-IN @", y,x, "BLOCK TYPE: ", each[0])
                 #rt
                 if each[0] == 2:
                     continue 

@@ -5,15 +5,27 @@
     <Bird type="bird_0" />
     <Bird type="bird_1" />
     <Bird type="bird_2" />
-    <Bird type="BlueBird_Child0" />
-    <Bird type="BlueBird_Child1" />
-    <Bird type="BlueBird_Child2" />
+    <Bird type="bird_3" />
     <Slingshot x="0" y="0" />
     <GameObjects>
-      <Block type="RectMedium(Clone)" material="wood" x="5.25" y="-3.23" rotation="0" />
-      <Block type="RectFat(Clone)" material="wood" x="5.22" y="-2.71" rotation="90.00001" />
-      <Pig type="BasicMedium(Clone)" x="5.21" y="-2.03" rotation="0" />
-      <TNT type="TNT(Clone)" x="3.21" y="-4" rotation="0" />
+      <Block type="RectTiny(Clone)" material="wood" x="2.3" y="-2" rotation="0" />
+      <Block type="RectSmall(Clone)" material="wood" x="2.5" y="-2.25" rotation="0" />
+      <Block type="RectMedium(Clone)" material="wood" x="2.9" y="-2.5" rotation="0" />
+      <Block type="RectBig(Clone)" material="wood" x="3.1" y="-2.75" rotation="0" />
+      <Block type="RectFat(Clone)" material="wood" x="2.5" y="-3" rotation="0" />
+      <Block type="SquareTiny(Clone)" material="wood" x="1.2" y="-2" rotation="0" />
+      <Block type="SquareSmall(Clone)" material="wood" x="1.25" y="-2.5" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="1.5" y="-3" rotation="0" />
+      <Block type="Triangle(Clone)" material="wood" x="0.5" y="-2.5" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="0.5" y="-3" rotation="0" />
+      <Block type="TriangleHole(Clone)" material="wood" x="5.25" y="-2.5" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="5.5" y="-3" rotation="0" />
+      <Block type="Circle(Clone)" material="wood" x="5.75" y="-2.5" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="6" y="-3" rotation="0" />
+      <Block type="CircleSmall(Clone)" material="wood" x="6.25" y="-2.5" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="6.5" y="-3" rotation="0" />
+      <Block type="SquareHole(Clone)" material="wood" x="7" y="-3" rotation="0" />
+      <TNT type="TNT(Clone)" x="7" y="-2.5" rotation="0" />
     </GameObjects>
   </Birds>
 </Level>

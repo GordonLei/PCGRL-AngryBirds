@@ -24,7 +24,7 @@ for t in range(1):
   env2.render('human')
   
   stall = 0
-  while stall < 10000000000000000:
+  while stall < 1000:
     stall += 1
 
 
