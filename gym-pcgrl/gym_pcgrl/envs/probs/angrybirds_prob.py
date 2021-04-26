@@ -26,33 +26,63 @@ class AngryBirdsProblem(Problem):
         # the rightmost wall is x = 14.00
 
         #a platform is around .5 radius so it's a 1x1 block
+        #FAT blocks are .5; regular are .25 radius
 
         # x is 21 wide so you probably want around 42 for width
-        self._width = 42
+
+        # each tile is .25 so do 21*4 = 84
+
+        #increment by 1 so its actual width?
+
+        self._width = 10#42
+        
         # y is around 12.25 tall so 24.50 for height. round it to 25
-        self._height = 25
+        #each tile is .25 so do 12.25*4 = 49
+
+        #increment by 1 so its actual height?
+        self._height = 10#49
 
         # a dictionary that contains all of the possible tile types
-        tiles = self.get_tile_types()
+        self._tiles = self.get_tile_types()
 
         # probably table of how likely a certain tile would be generated for initial state
         self._prob = {
-
-            "empty":0.69,
+            "empty":0.80,
             "solid":0.00,
-            "squareHole":0.04,
-            "rectFat":0.04,
-            "squareSmall":0.02,
-            "squareTiny":0.02,
-            "rectTiny":0.02, 
-            "rectSmall":0.02,
-            "rectMedium":0.02, 
-            "rectBig":0.06,
-            "triangleHole":0.01,
-            "triangle":0.01,
-            "circle":0.01,
-            "circleSmall":0.01,
-            "TNT":0.01,
+
+            "rt_corner":0.04,
+
+            "rh_corner":0.04,
+            "rh_l":0.00,
+            "rh_r":0.00,
+            "rh_lr":0.00,
+            "rh_ul":0.00,
+            "rh_ur":0.00,
+
+            "rs_corner":0.02,
+            "rs_o1":0.00,
+
+            "rm_corner":0.06,
+            "rm_o1":0.00,
+            "rm_o2":0.00,
+            "rm_o3":0.00,
+
+            "rl_corner":0.01,
+            "rl_o1":0.00,
+            "rl_o2":0.00,
+            "rl_o3":0.00,
+            "rl_o4":0.00,
+
+            "rf_corner":0.01,
+            "rf_lr":0.00,
+            "rf_ul":0.00,
+            "rf_ur":0.00,
+
+            "tnt_corner":0.01,
+            "tnt_lr":0.00,
+            "tnt_ul":0.00,
+            "tnt_ur":0.00,
+
             "pig":0.01,
             # "redBird":0.002,
             # "blueBird":0.002,
@@ -61,6 +91,48 @@ class AngryBirdsProblem(Problem):
             # "blackBird":0.002,
         }
 
+        i = 0.00
+
+        #for each in self._prob:
+        #   i += self._prob[each]
+        #print("PROB_SUM: ", i)
+
+        
+
+
+        #self._prob = self._prob / sum( self._prob.values() )
+        #normalize the dict values 
+        
+        #data = list(self._prob.items())
+        #an_array = np.array(data)
+        #print(self._prob)
+        #sum_val = 0.00
+
+        #for each in an_array:
+        #    sum_val += float(each[1])
+        #print(sum_val)
+
+        #for i in range(len(an_array)):
+        #    an_array[i][1] = float(an_array[i][1]) * (1./ sum_val)
+        #    #print(an_array[i][1])
+        #    self._prob[an_array[i][0]] = float(an_array[i][1])
+        
+        #print(self._prob.values())
+
+
+
+
+        #sum_val = 0
+        #for each in an_array:
+        #    sum_val += float(each[1])
+        #print("NEW SUM: ", sum_val)
+        #sum_val = sum(self._prob.values())
+        #print("SUM_val: ", sum_val)
+        #print("new", self._prob)
+        
+        #for i in self._prob:
+        #    self._prob[i] = float(self._prob[i] / sum_val)
+        
         self._border_tile = "solid"
         # max_enemies would be number of pigs
         self._max_pigs = 10
@@ -88,22 +160,43 @@ class AngryBirdsProblem(Problem):
     """
     def get_tile_types(self):
         return [
-            "empty",
-            "solid",
-            "squareHole", 
-            "rectFat", 
-            "squareSmall", 
-            "squareTiny",
-            "rectTiny", 
-            "rectSmall", 
-            "rectMedium", 
-            "rectBig",
-            "triangleHole", 
-            "triangle", 
-            "circle", 
-            "circleSmall",
-            "TNT", 
-            "pig",
+            "empty", #0
+            "solid", #1
+
+            "rt_corner",#2
+            "rh_corner",#3
+            "rh_l",#4
+            "rh_r",#5
+            "rh_lr",#6
+            "rh_ul",#7
+            "rh_ur",#8
+
+            "rs_corner",#9
+            "rs_o1",#10
+
+            "rm_corner",#11
+            "rm_o1",#12
+            "rm_o2",#13
+            "rm_o3",#14
+
+            "rl_corner",#15
+            "rl_o1",#16
+            "rl_o2",#17
+            "rl_o3",#18
+            "rl_o4",#19
+
+            "rf_corner",#20
+            "rf_lr",#21
+            "rf_ul",#22
+            "rf_ur",#23
+
+            "tnt_corner",#24
+            "tnt_lr",#25
+            "tnt_ul",#26
+            "tnt_ur",#27
+
+            "pig",#28
+
             # "redBird",
             # "blueBird",
             # "yellowBird",
@@ -162,60 +255,65 @@ class AngryBirdsProblem(Problem):
         input_path = os.path.abspath(os.path.join(__file__ ,"../../../../../compare_XML/input.xml"))
         output_path = os.path.abspath(os.path.join(__file__ ,"../../../../../compare_XML/output.xml"))
         
-        parser = ET.XMLParser(encoding="utf-8")
-        input_XML = ET.parse(input_path, parser= parser)
 
-        #run the Unity .exe
-        script = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
+        try: 
+            parser = ET.XMLParser(encoding="utf-8")
+            input_XML = ET.parse(input_path, parser= parser)
 
-        #os.system(script)
-        #sts = subprocess.call(script, shell=True)
-        sb = subprocess.Popen(script)
+            #run the Unity .exe
+            script = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
 
+            #os.system(script)
+            #sts = subprocess.call(script, shell=True)
+            sb = subprocess.Popen(script)
+            time.sleep(5)
+            sb.terminate()
+            #os.system("TASKKILL /F /IM C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe")
 
-        time.sleep(10)
+            parser = ET.XMLParser(encoding="utf-8")
+            print(output_path)
+            output_XML = ET.parse(output_path, parser= parser)
 
-        sb.terminate()
-        #os.system("TASKKILL /F /IM C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe")
+            input_root = input_XML.getroot()
+            output_root = output_XML.getroot()
+            # [1] is <Birds> tag 
+            # [5] is <GameObjects depending on number of birds>. so use .tag to find GameObjects Tag 
+            # input and output file look the same 
 
+            GO_input_index = 0 
+            GO_output_index = 0
 
+            #do this to increment to where the .tag is GameObjects
+            while(input_root[1][GO_input_index].tag != "GameObjects"):
+                GO_input_index += 1
+                #print("INC 1")
+            while(output_root[1][GO_output_index].tag != "GameObjects"):
+                GO_output_index += 1
+                #print("INC 2")
 
-        parser = ET.XMLParser(encoding="utf-8")
-        output_XML = ET.parse(output_path, parser= parser)
-
-        input_root = input_XML.getroot()
-        output_root = output_XML.getroot()
-        # [1] is <Birds> tag 
-        # [5] is <GameObjects depending on number of birds>. so use .tag to find GameObjects Tag 
-        # input and output file look the same 
-
-        GO_input_index = 0 
-        GO_output_index = 0
-
-        while(input_root[1][GO_input_index].tag != "GameObjects"):
-            GO_input_index += 1
-            #print("INC 1")
-        while(output_root[1][GO_output_index].tag != "GameObjects"):
-            GO_output_index += 1
-            #print("INC 2")
-
-        #print(len(input_root[1][GO_input_index]))
-
-        #this means that something changed before reaching GameObjects
-        if(GO_input_index != GO_output_index):
-            return 0 
-        for i in range(len (input_root[1][GO_input_index] )):
-            input_obj = input_root[1][GO_input_index][i].attrib
-            output_obj = output_root[1][GO_input_index][i].attrib
-            #print(input_obj)
-            if(input_obj['x'] != output_obj['x'] or input_obj['y'] != output_obj['y']):
+            #this means that something changed before reaching GameObjects
+            if(GO_input_index != GO_output_index):
                 return 0 
-            else:
-                print("COMPARED")
-        #print(input_root[1][5][0].attrib)
 
-        # 1 means this is stable? 
-        return 1
+            x_threshold = .25
+            y_threshold = .25
+
+            for i in range(len (input_root[1][GO_input_index] )):
+                input_obj = input_root[1][GO_input_index][i].attrib
+                output_obj = output_root[1][GO_input_index][i].attrib
+                print("x = ", input_obj['x'], output_obj['x'])
+                print("y = ", input_obj['y'], output_obj['y'])
+                if( abs( float(input_obj['x']) - float(output_obj['x'])) >= x_threshold  
+                    or abs( float(input_obj['y']) - float(output_obj['y'])) >= y_threshold):
+                    return 0 
+                else:
+                    print("COMPARED")
+            #print(input_root[1][5][0].attrib)
+
+            # 1 means this is stable? 
+            return 1
+        except:
+            pass
 
     """
         Get the current stats of the map
@@ -233,10 +331,14 @@ class AngryBirdsProblem(Problem):
         map_stats = {
             "empty": calc_certain_tile(map_locations, ["empty"]),
             "pig": calc_certain_tile(map_locations, ["pig"]),
-            "TNT": calc_certain_tile(map_locations, ["TNT"]),
+            "TNT": calc_certain_tile(map_locations, ["tnt_corner"]),
             # "birds": calc_certain_tile(map_locations, ["redBird", "blueBird", "yellowBird", "whiteBird", "blackBird"]),
-            "blocks": calc_certain_tile(map_locations, ["squareHole", "rectFat", "squareSmall", "squareTiny","rectTiny", "rectSmall", "rectMedium", "rectBig","triangleHole", "triangle", "circle", "circleSmall"]),
-            "regions": calc_num_regions(map, map_locations, ["empty", "pig", "squareHole", "rectFat", "squareSmall", "squareTiny","rectTiny", "rectSmall", "rectMedium", "rectBig","triangleHole", "triangle", "circle", "circleSmall"]),
+
+            #REMOVED squareTiny and circles and trianglesfrom the 2 below
+            "blocks": calc_certain_tile(
+                map_locations, ["rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
+            "regions": calc_num_regions(
+                map, map_locations, ["empty", "pig", "rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
         }
         #this part is to find other keys for map_states
         '''
@@ -374,20 +476,57 @@ class AngryBirdsProblem(Problem):
             self._graphics = {
                 "empty": Image.open(os.path.dirname(__file__) + "/angrybirds/empty.png").convert('RGBA'),
                 "solid": Image.open(os.path.dirname(__file__) + "/angrybirds/solid.png").convert('RGBA'),
-                "squareHole": Image.open(os.path.dirname(__file__) + "/angrybirds/square_hole.png").convert('RGBA'),
-                "rectFat": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_fat.png").convert('RGBA'),
-                "squareSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/square_small.png").convert('RGBA'),
-                "squareTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/square_tiny.png").convert('RGBA'),
-                "rectTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_tiny.png").convert('RGBA'),
-                "rectSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_small.png").convert('RGBA'),
-                "rectMedium": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_medium.png").convert('RGBA'),
-                "rectBig": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_big.png").convert('RGBA'),
-                "triangleHole": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle_hole.png").convert('RGBA'),
-                "triangle": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle.png").convert('RGBA'),
-                "circle": Image.open(os.path.dirname(__file__) + "/angrybirds/circle.png").convert('RGBA'),
-                "circleSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/circle_small.png").convert('RGBA'),
-                "TNT": Image.open(os.path.dirname(__file__) + "/angrybirds/tnt.png").convert('RGBA'),
+
+                "rt_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rt_corner.png").convert('RGBA'),
+
+                "rh_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_corner.png").convert('RGBA'),
+                "rh_l":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_l.png").convert('RGBA'),
+                "rh_r":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_r.png").convert('RGBA'),
+                "rh_lr":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_lr.png").convert('RGBA'),
+                "rh_ul":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_ul.png").convert('RGBA'),
+                "rh_ur":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rh_ur.png").convert('RGBA'),
+
+                "rs_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rs_corner.png").convert('RGBA'),
+                "rs_o1":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rs_o1.png").convert('RGBA'),
+
+                "rm_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rm_corner.png").convert('RGBA'),
+                "rm_o1":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rm_o1.png").convert('RGBA'),
+                "rm_o2":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rm_o2.png").convert('RGBA'),
+                "rm_o3":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rm_o3.png").convert('RGBA'),
+
+                "rl_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rl_corner.png").convert('RGBA'),
+                "rl_o1":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rl_o1.png").convert('RGBA'),
+                "rl_o2":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rl_o2.png").convert('RGBA'),
+                "rl_o3":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rl_o3.png").convert('RGBA'),
+                "rl_o4":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rl_o4.png").convert('RGBA'),
+
+                "rf_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rf_corner.png").convert('RGBA'),
+                "rf_lr":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rf_lr.png").convert('RGBA'),
+                "rf_ul":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rf_ul.png").convert('RGBA'),
+                "rf_ur":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/rf_ur.png").convert('RGBA'),
+
+                "tnt_corner":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_corner.png").convert('RGBA'),
+                "tnt_lr":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_lr.png").convert('RGBA'),
+                "tnt_ul":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_ul.png").convert('RGBA'),
+                "tnt_ur":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_ur.png").convert('RGBA'),
+
+
+                
+                #"squareHole": Image.open(os.path.dirname(__file__) + "/angrybirds/square_hole.png").convert('RGBA'),
+                #"rectFat": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_fat.png").convert('RGBA'),
+                #"squareSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/square_small.png").convert('RGBA'),
+                #"squareTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/square_tiny.png").convert('RGBA'),
+                #"rectTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_tiny.png").convert('RGBA'),
+                #"rectSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_small.png").convert('RGBA'),
+                #"rectMedium": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_medium.png").convert('RGBA'),
+                #"rectBig": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_big.png").convert('RGBA'),
+                #"triangleHole": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle_hole.png").convert('RGBA'),
+                #"triangle": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle.png").convert('RGBA'),
+                #"circle": Image.open(os.path.dirname(__file__) + "/angrybirds/circle.png").convert('RGBA'),
+                #"circleSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/circle_small.png").convert('RGBA'),
+                #"TNT": Image.open(os.path.dirname(__file__) + "/angrybirds/tnt.png").convert('RGBA'),
                 "pig": Image.open(os.path.dirname(__file__) + "/angrybirds/pig.png").convert('RGBA'),
+                
                 # "redBird": Image.open(os.path.dirname(__file__) + "/angrybirds/redBird.png").convert('RGBA'),
                 # "blueBird": Image.open(os.path.dirname(__file__) + "/angrybirds/blueBird.png").convert('RGBA'),
                 # "yellowBird": Image.open(os.path.dirname(__file__) + "/angrybirds/yellowBird.png").convert('RGBA'),

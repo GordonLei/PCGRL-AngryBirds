@@ -111,6 +111,10 @@ class NarrowRepresentation(Representation):
                 self._y += 1
                 if self._y >= self._map.shape[0]:
                     self._y = 0
+        print("=============== MAP ===============")
+        print(self._map)
+        print("=============== CLOSE MAP ===============")
+        print(self._map[0])
         return change, self._x, self._y
 
     """

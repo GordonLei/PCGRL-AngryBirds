@@ -308,7 +308,22 @@ Returns:
     int[][]: the random generated map
 """
 def gen_random_map(random, width, height, prob):
+
+    #print("MAP VALUES", list(prob.values()))
+    #print(sum(list(prob.values())))
+
+    #p_list= list(prob.values())
+    #TEMPORARY FIX 
+    #if(sum(list(prob.values())) <= 1.0):
+    #    print("HERE: ", p_list[0])
+    #    p_list[0] += 1.0 - sum(list(prob.values()))
+    #map = random.choice(list(prob.keys()),size=(height,width),p=p_list).astype(np.uint8)
+    #print(map)
+
+    #return map
+    print("DONE HERE FOR SOME REASON")
     map = random.choice(list(prob.keys()),size=(height,width),p=list(prob.values())).astype(np.uint8)
+    #print(map)
     return map
 
 """
