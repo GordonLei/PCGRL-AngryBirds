@@ -84,46 +84,6 @@ class AngryBirdsProblem(Problem):
         }
 
         i = 0.00
-
-        #for each in self._prob:
-        #   i += self._prob[each]
-        #print("PROB_SUM: ", i)
-
-        
-
-
-        #self._prob = self._prob / sum( self._prob.values() )
-        #normalize the dict values 
-        
-        #data = list(self._prob.items())
-        #an_array = np.array(data)
-        #print(self._prob)
-        #sum_val = 0.00
-
-        #for each in an_array:
-        #    sum_val += float(each[1])
-        #print(sum_val)
-
-        #for i in range(len(an_array)):
-        #    an_array[i][1] = float(an_array[i][1]) * (1./ sum_val)
-        #    #print(an_array[i][1])
-        #    self._prob[an_array[i][0]] = float(an_array[i][1])
-        
-        #print(self._prob.values())
-
-
-
-
-        #sum_val = 0
-        #for each in an_array:
-        #    sum_val += float(each[1])
-        #print("NEW SUM: ", sum_val)
-        #sum_val = sum(self._prob.values())
-        #print("SUM_val: ", sum_val)
-        #print("new", self._prob)
-        
-        #for i in self._prob:
-        #    self._prob[i] = float(self._prob[i] / sum_val)
         
         self._border_tile = "solid"
         # max_enemies would be number of pigs
@@ -195,19 +155,6 @@ class AngryBirdsProblem(Problem):
             # "whiteBird",
             # "blackBird"
         ]
-            #{
-            # '0': "Empty",
-            #  '1': "SquareHole", '2': "RectFat", '3': "RectFat", '4': "SquareSmall",
-            # '5': "SquareTiny", '6': "RectTiny", '7': "RectTiny", '8': "RectSmall",
-            # '9': "RectSmall", '10': "RectMedium", '11': "RectMedium",
-            # '12': "RectBig", '13': "RectBig", '14': "pig", '15': "TNT"
-
-            # '1': "SquareHole" , '2': "RectFat", '3': "SquareSmall", '4':"SquareTiny",
-            # '5': "RectTiny", '6': "RectSmall", '7': "RectMedium", '8': "RectBig",
-            # '9': "TriangleHole", '10': "Triangle" , '11': "Circle", '12': "CircleSmall",
-            # '13': "TNT", '14': "Pig"
-
-            #}
         
     def adjust_param(self, **kwargs):
         super().adjust_param(**kwargs)
@@ -253,41 +200,19 @@ class AngryBirdsProblem(Problem):
             input_XML = ET.parse(input_path, parser= parser)
 
             #run the Unity .exe
-            #script = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
-            
-            #script_pre = '''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild'''
-            #script_after = "C:/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"
-
-            #script = script_pre + " && " + script_after
-            #script='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild && C:/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe'''
-            
-            #script='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild; "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"'''
-            script1='''"/d/Unity/2017.3.1f1/Editor/Unity.exe" -quit -batchmode -buildTarget win64 -projectPath "/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds" -executeMethod MyEditorScript.PerformBuild''' 
-            script2 ='''"/c/Users/nekonek0/Desktop/Computer_Science/GitHub_repos/science-birds/EXE/DUMMY.exe"'''
-            #os.system(script)
-            #sts = subprocess.call(script, shell=True)
-            #print(script)
-            #sb = subprocess.Popen(script,shell=True)
-            #sb = subprocess.call(script,shell=True)
-
             script1 = "D:\\Unity\\2017.3.1f1\\Editor\\Unity.exe -quit -batchmode -buildTarget win64 -projectPath C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds -executeMethod MyEditorScript.PerformBuild"
             script2 = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
 
             sb = subprocess.Popen(script1)
             time.sleep(20)
-            #print("SCRIPT 1: ", script1)
+
             sb.terminate()
-            #print("TERMINATED 1")
             sb = subprocess.Popen(script2)
             
             time.sleep(7)
-            #print("SCRIPT 2: ", script2)
             sb.terminate()
-            #print("TERMINATED 2")
-            #os.system("TASKKILL /F /IM C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe")
 
             parser = ET.XMLParser(encoding="utf-8")
-            #print(output_path)
             output_XML = ET.parse(output_path, parser= parser)
 
             input_root = input_XML.getroot()
@@ -314,18 +239,15 @@ class AngryBirdsProblem(Problem):
             x_threshold = .25
             y_threshold = .25
 
+            #check if anything shifted. if something shifted, then level is unstable therefore return 0 reward
             for i in range(len (input_root[1][GO_input_index] )):
                 input_obj = input_root[1][GO_input_index][i].attrib
                 output_obj = output_root[1][GO_input_index][i].attrib
-                #print("x = ", input_obj['x'], output_obj['x'])
-                #print("y = ", input_obj['y'], output_obj['y'])
                 if( abs( float(input_obj['x']) - float(output_obj['x'])) >= x_threshold  
                     or abs( float(input_obj['y']) - float(output_obj['y'])) >= y_threshold):
                     return 0 
                 else:
                     print("stable level")
-            #print(input_root[1][5][0].attrib)
-
             # 1 means this is stable? 
             return 1
         except:
@@ -482,14 +404,6 @@ class AngryBirdsProblem(Problem):
 
     def render(self, map):
         if self._graphics == None:
-
-            '''
-            '1': "SquareHole" , '2': "RectFat", '3': "SquareSmall", '4':"SquareTiny",
-                '5': "RectTiny", '6': "RectSmall", '7': "RectMedium", '8': "RectBig",
-                '9': "TriangleHole", '10': "Triangle" , '11': "Circle", '12': "CircleSmall",
-                '13': "TNT", '14': "Pig"
-            '''
-
             self._graphics = {
                 "empty": Image.open(os.path.dirname(__file__) + "/angrybirds/empty.png").convert('RGBA'),
                 "solid": Image.open(os.path.dirname(__file__) + "/angrybirds/solid.png").convert('RGBA'),
@@ -527,21 +441,6 @@ class AngryBirdsProblem(Problem):
                 "tnt_ul":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_ul.png").convert('RGBA'),
                 "tnt_ur":Image.open(os.path.dirname(__file__) + "/angrybirds/new_sprites/tnt_ur.png").convert('RGBA'),
 
-
-                
-                #"squareHole": Image.open(os.path.dirname(__file__) + "/angrybirds/square_hole.png").convert('RGBA'),
-                #"rectFat": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_fat.png").convert('RGBA'),
-                #"squareSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/square_small.png").convert('RGBA'),
-                #"squareTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/square_tiny.png").convert('RGBA'),
-                #"rectTiny": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_tiny.png").convert('RGBA'),
-                #"rectSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_small.png").convert('RGBA'),
-                #"rectMedium": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_medium.png").convert('RGBA'),
-                #"rectBig": Image.open(os.path.dirname(__file__) + "/angrybirds/rect_big.png").convert('RGBA'),
-                #"triangleHole": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle_hole.png").convert('RGBA'),
-                #"triangle": Image.open(os.path.dirname(__file__) + "/angrybirds/triangle.png").convert('RGBA'),
-                #"circle": Image.open(os.path.dirname(__file__) + "/angrybirds/circle.png").convert('RGBA'),
-                #"circleSmall": Image.open(os.path.dirname(__file__) + "/angrybirds/circle_small.png").convert('RGBA'),
-                #"TNT": Image.open(os.path.dirname(__file__) + "/angrybirds/tnt.png").convert('RGBA'),
                 "pig": Image.open(os.path.dirname(__file__) + "/angrybirds/pig.png").convert('RGBA'),
                 
                 # "redBird": Image.open(os.path.dirname(__file__) + "/angrybirds/redBird.png").convert('RGBA'),
@@ -549,31 +448,6 @@ class AngryBirdsProblem(Problem):
                 # "yellowBird": Image.open(os.path.dirname(__file__) + "/angrybirds/yellowBird.png").convert('RGBA'),
                 # "whiteBird": Image.open(os.path.dirname(__file__) + "/angrybirds/whiteBird.png").convert('RGBA'),
                 # "blackBird": Image.open(os.path.dirname(__file__) + "/angrybirds/blackBird.png").convert('RGBA'),
-            
             }
 
-
-            '''
-            print(self._graphics["empty"].size)
-            print(self._graphics["solid"].size)
-            print(self._graphics["squareHole"].size) 
-            print(self._graphics["rectFat"].size)
-            print(self._graphics["squareSmall"].size) 
-            print(self._graphics["squareTiny"].size)
-            print(self._graphics["rectTiny"].size)
-            print(self._graphics["rectSmall"].size) 
-            print(self._graphics["rectMedium"].size) 
-            print(self._graphics["rectBig"].size)
-            print(self._graphics["triangleHole"].size) 
-            print(self._graphics["triangle"].size)
-            print(self._graphics["circle"].size)
-            print(self._graphics["circleSmall"].size)
-            print(self._graphics["TNT"].size)
-            print(self._graphics["pig"].size)
-            print(self._graphics["redBird"].size)
-            print(self._graphics["blueBird"].size)
-            print(self._graphics["yellowBird"].size)
-            print(self._graphics["whiteBird"].size)
-            print(self._graphics["blackBird"].size)
-            '''
         return super().render(map)

@@ -230,11 +230,8 @@ class WideAngryBirdsRepresentation(Representation):
 
             #print(str(each[0]), xy_diff[0], xy_diff[1], each[2]/2 - x_diff, map_height - each[1]/4 - y_diff)
             #print(map_height, each[1]/4,y_diff, "y_diff: ",3.25+xy_diff[1])
-
             temp_block.set('rotation', "0")
-            #fill in temp_block
 
-            #end
         for each in pigs_array:
             #HAVE TO ACCOUNT THAT YOU PLACE THE BLOCK BASED ON THE CENTER OF THE BLOCK IN UNITY
             #MapToUnity(typeOfBlock) will return how to move leftmost lowermost corner to center of the block
@@ -248,9 +245,7 @@ class WideAngryBirdsRepresentation(Representation):
             temp_pig.set('x', str(each[1]/2 - x_diff ))
             temp_pig.set('y', str(map_height - each[0]/4 - y_diff ))
             temp_pig.set('rotation', '0')
-            #fill in temp_pig
 
-            #end
         for each in tnt_array:
             #HAVE TO ACCOUNT THAT YOU PLACE THE BLOCK BASED ON THE CENTER OF THE BLOCK IN UNITY
             #MapToUnity(typeOfBlock) will return how to move leftmost lowermost corner to center of the block
@@ -263,9 +258,7 @@ class WideAngryBirdsRepresentation(Representation):
             temp_tnt .set('x', str(each[1]/2 - x_diff ))
             temp_tnt .set('y', str(map_height - each[0]/4 - y_diff ))
             temp_tnt .set('rotation', '0')
-            #fill in temp_pig
 
-            #end
         
         '''
         for each in platform_array:
@@ -437,16 +430,7 @@ class WideAngryBirdsRepresentation(Representation):
                     map[y-1][x+1] = 5 
                     map[y-2][x+1] = 5 
                     map[y-3][x+1] = 8 
-                    '''
-                    map[x][y+1] = 4
-                    map[x][y+2] = 4 
-                    map[x][y+3] = 6 
 
-                    map[x+1][y] = 6 
-                    map[x+1][y+1] = 5 
-                    map[x+1][y+2] = 5 
-                    map[x+1][y+3] = 6 
-                    '''
                 #rs
                 elif each[0] == 9:
                     map[y][x+1] = 10
@@ -456,43 +440,26 @@ class WideAngryBirdsRepresentation(Representation):
                     map[y][x+1] = 12
                     map[y][x+2] = 13
                     map[y][x+3] = 14
-                    '''
-                    map[x+1][y] = 10
-                    map[x+2][y] = 10
-                    map[x+3][y] = 10
-                    '''
+
                 #rl
                 elif each[0] == 15:
                     map[y][x+1] = 16
                     map[y][x+2] = 17
                     map[y][x+3] = 18
                     map[y][x+4] = 19
-                    '''
-                    map[x+1][y] = 12
-                    map[x+2][y] = 12
-                    map[x+3][y] = 12
-                    map[x+4][y] = 12
-                    '''
+
                 #rf
                 elif each[0] == 20:
                     map[y-1][x] = 22
                     map[y][x+1] = 21
                     map[y-1][x+1] = 23
-                    '''
-                    map[x][y+1] = 14
-                    map[x+1][y] = 14
-                    map[x+1][y+1] = 14
-                    '''
+
                 #tnt
                 elif each[0] == 24:
                     map[y-1][x] = 26
                     map[y][x+1] = 25
                     map[y-1][x+1] = 27
-                    '''
-                    map[x][y+1] = 17
-                    map[x+1][y] = 16
-                    map[x+1][y+1] = 18
-                    '''
+
                 #error
                 else:
                     print("ERROR")
