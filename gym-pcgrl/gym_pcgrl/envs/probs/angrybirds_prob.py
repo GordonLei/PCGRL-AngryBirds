@@ -28,11 +28,19 @@ class AngryBirdsProblem(Problem):
         #a platform is around .5 radius so it's a 1x1 block
         #FAT blocks are .5; regular are .25 radius
 
-        # x is 15 wide so you probably want around 18*2 for width
+        # x is 15 wide so you probably want around 15*2 for width
         self._width = 30 #amount of .5 segments
-        
+
+        # x is 15 wide so you probably want around 15/(.215*2) for width
+        # times 2 since it is .215 from center of object to the origin so double to get full max height 
+        #self._width = 35 #amount of .5 segments
+
         # y is around 5.25 tall so 5.25*4 for height
         self._height = 21 #amount of .25 segments
+
+        # y is around 5.25 tall so 5.25/(.110*2) for height
+        # times 2 since it is .215 from center of object to the origin so double to get full max height 
+        #self._height = 24 #amount of .25 segments
 
         # a dictionary that contains all of the possible tile types
         self._tiles = self.get_tile_types()
@@ -199,6 +207,7 @@ class AngryBirdsProblem(Problem):
             parser = ET.XMLParser(encoding="utf-8")
             input_XML = ET.parse(input_path, parser= parser)
 
+            #'''
             #run the Unity .exe
             script1 = "D:\\Unity\\2017.3.1f1\\Editor\\Unity.exe -quit -batchmode -buildTarget win64 -projectPath C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds -executeMethod MyEditorScript.PerformBuild"
             script2 = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\EXE\\DUMMY.exe"
@@ -211,6 +220,7 @@ class AngryBirdsProblem(Problem):
             
             time.sleep(7)
             sb.terminate()
+            #'''
 
             parser = ET.XMLParser(encoding="utf-8")
             output_XML = ET.parse(output_path, parser= parser)

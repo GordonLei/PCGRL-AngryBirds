@@ -94,24 +94,24 @@ class WideAngryBirdsRepresentation(Representation):
 
         #with reference to leftmost corner and objects placed on there 
         if(typeOfBlock == "RectTiny"):
-            return (0.25,-0.125)
+            return (0.215,0.110)
         elif(typeOfBlock == "SquareHole"): 
-            return (0.4,-0.4)
+            return (0.420,0.420)
         elif(typeOfBlock == "RectSmall"): 
-            return (0.4,-0.125)
+            return (0.425,0.110)
         elif(typeOfBlock == "RectMedium"):
-            return (.85,-0.125)
+            return (.840,0.110)
         elif(typeOfBlock == "RectBig"):
-            return (1.00,-0.125)
+            return (1.025,0.110)
         elif(typeOfBlock == "RectFat"):
-            return (0.5,-0.25)
+            return (0.425,0.220)
     
         elif(typeOfBlock == "TNT"):
-            return (0.333,-0.333)
+            return (0.33,0.33)
         elif(typeOfBlock == "Pig"):
-            return (0.25,-0.25)
+            return (0.235,0.230)
         elif(typeOfBlock == "Platform"):
-            return (0.333,-0.333)
+            return (0.333,0.333)
         else:
             print("ERROR HAS OCCURED WHEN TRANSLATING MAP TO UNITY", typeOfBlock)
             return (0,0)
@@ -209,9 +209,15 @@ class WideAngryBirdsRepresentation(Representation):
         map_height = 5.25
         #this is to account that blocks can go beyond x=0 or y=0 as origin is not the corner of the level
         
-        x_max_from_origin = 4
-        y_max_from_origin = 3.25
+        x_max_from_origin = -5
+        y_max_from_origin = -3.75
 
+        #conversions to divide by to get map to unity
+        x_conv = 1/ (.25 * 2)
+        y_conv = 1 / (.125 * 2)
+
+        x_threshold = 0#.0005
+        y_threshold = .0005
         for each in blocks_array:
             temp_block = ET.SubElement(gameObjects, 'Block')
 
@@ -225,8 +231,8 @@ class WideAngryBirdsRepresentation(Representation):
             x_diff = x_max_from_origin + xy_diff[0]
             y_diff = y_max_from_origin + xy_diff[1]
 
-            temp_block.set('x', str(each[2]/2 - x_diff ))
-            temp_block.set('y', str(map_height - each[1]/4 - y_diff))
+            temp_block.set('x', str(each[2]/x_conv + x_diff + x_threshold))
+            temp_block.set('y', str(map_height - each[1]/y_conv + y_diff + y_threshold))
 
             #print(str(each[0]), xy_diff[0], xy_diff[1], each[2]/2 - x_diff, map_height - each[1]/4 - y_diff)
             #print(map_height, each[1]/4,y_diff, "y_diff: ",3.25+xy_diff[1])
@@ -242,8 +248,8 @@ class WideAngryBirdsRepresentation(Representation):
 
             temp_pig = ET.SubElement(gameObjects, 'Pig')
             temp_pig.set('type', 'BasicSmall')
-            temp_pig.set('x', str(each[1]/2 - x_diff ))
-            temp_pig.set('y', str(map_height - each[0]/4 - y_diff ))
+            temp_pig.set('x', str(each[1]/x_conv + x_diff + x_threshold))
+            temp_pig.set('y', str(map_height - each[0]/y_conv+ y_diff + y_threshold))
             temp_pig.set('rotation', '0')
 
         for each in tnt_array:
@@ -255,8 +261,8 @@ class WideAngryBirdsRepresentation(Representation):
             y_diff = y_max_from_origin + xy_diff[1]
 
             temp_tnt = ET.SubElement(gameObjects, 'TNT')
-            temp_tnt .set('x', str(each[1]/2 - x_diff ))
-            temp_tnt .set('y', str(map_height - each[0]/4 - y_diff ))
+            temp_tnt .set('x', str(each[1]/x_conv + x_diff + x_threshold))
+            temp_tnt .set('y', str(map_height - each[0]/y_conv + y_diff + y_threshold))
             temp_tnt .set('rotation', '0')
 
         
@@ -269,8 +275,8 @@ class WideAngryBirdsRepresentation(Representation):
             #y_diff = y_max_from_origin + xy_diff[1]
 
             temp_platform = ET.SubElement(gameObjects, 'Platform')
-            temp_platform.set('x', str(each[1]/2 - x_diff ))
-            temp_platform.set('y', str(map_height - each[0]/4 - y_diff ))
+            temp_platform.set('x', str(each[1]/x_conv + x_diff + x_threshold))
+            temp_platform.set('y', str(map_height - each[0]/y_conv + y_diff + y_threshold))
             temp_platform.set('scaleX', '5.5')
             temp_platform.set('scaleY', '8')
         '''
