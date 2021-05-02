@@ -216,15 +216,17 @@ class AngryBirdsProblem(Problem):
             time.sleep(20)
 
             sb.terminate()
+            print("compiling Unity project done")
             sb = subprocess.Popen(script2)
             
-            time.sleep(7)
+            time.sleep(10)
             sb.terminate()
             #'''
+            print("open and closed Unity project")
 
             parser = ET.XMLParser(encoding="utf-8")
             output_XML = ET.parse(output_path, parser= parser)
-
+            print("parsed through output_XML")
             input_root = input_XML.getroot()
             output_root = output_XML.getroot()
             # [1] is <Birds> tag 
@@ -261,7 +263,7 @@ class AngryBirdsProblem(Problem):
             # 1 means this is stable? 
             return 1
         except:
-            print("PROBABLY FAILED COMPILING .EXE")
+            print(".EXE failed compilation OR output.xml is empty")
             pass
 
     """
@@ -343,9 +345,9 @@ class AngryBirdsProblem(Problem):
             rewards["pig"] * self._rewards["pig"]  +\
             rewards["TNT"] +\
             rewards["blocks"] * self._rewards["blocks"]+\
-            rewards["regions"]
+            rewards["regions"] #+ self._test_stability(map)
         # rewards["birds"] * self._rewards["birds"] +\
-        return self._get_variety_value(map, 1) + self._test_stability(map) + self._get_pig_potential(map, 1)
+        #return self._get_variety_value(map, 1) + self._test_stability(map) + self._get_pig_potential(map, 1)
 
     """
         Uses the stats to check if the problem ended (episode_over) which means reached
@@ -363,7 +365,8 @@ class AngryBirdsProblem(Problem):
     def get_episode_over(self, new_stats, old_stats):
         percentage = 10
         # return self._test_stability(map) == 1 and len(new_stats["empty"]) * 100 / self._height*self._width*100 < percentage
-        return self._test_stability(map) == 1 and new_stats["empty"] * 100 / self._height*self._width*100 < percentage
+        return new_stats["empty"] * 100 / self._height*self._width*100 < percentage
+        #return self._test_stability(map) == 1 and new_stats["empty"] * 100 / self._height*self._width*100 < percentage
 
     """
         Uses a formula to calculate how varied the blocks are in current level

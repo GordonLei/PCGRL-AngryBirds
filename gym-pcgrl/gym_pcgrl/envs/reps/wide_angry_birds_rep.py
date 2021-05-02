@@ -43,6 +43,9 @@ class WideAngryBirdsRepresentation(Representation):
         consists of the x position, y position, and the tile value
     """
     def get_action_space(self, width, height, num_tiles):
+        #originally was spaces.MultiDiscrete([width, height, num_tiles]) which returns 
+        #return 
+
         return spaces.MultiDiscrete([width, height, num_tiles])
 
     """
@@ -303,13 +306,92 @@ class WideAngryBirdsRepresentation(Representation):
     def update(self, action):
         change = [0,1][self._map[action[1]][action[0]] != action[2]]
         self._map[action[1]][action[0]] = action[2]
-
         #print("CURRENT MAP:\n", self._map)
+
+        self.fillin(self._map,False)
+
         self.writeXML(self._map)
-
-
         return change, action[0], action[1]
     
+    """
+    check if the block is filled in correctly 
+    this should be redundant code to check_collision 
+    """
+
+    def check_filled_correctly(self,type_block,y,x,map):
+        # map looks like this 
+        # top-most row is the top most level
+        # bottom-most row is the bottom most level
+        x_length = len(map[0]) - 1 #subtract one since this is supposed to represent possible indexes of the map
+        y_length = len(map)
+        #print("CURR_COORD: ",x,y)
+        #rt
+        if type_block == 2:
+            return True
+        #rh
+        elif type_block == 3:
+            #check if collide with map
+            if(x >= x_length or y < 3):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y-1][x] == 4 and map[y][x+1] == 6 and
+                map[y-2][x] == 4 and map[y-1][x+1] == 5 and 
+                map[y-3][x] == 7 and map[y-2][x+1] == 5 and
+                                    map[y-3][x+1] == 8 ):
+                    return True
+            return False
+        #rs
+        elif type_block == 9:
+            #check if collide with map
+            if(x >= x_length):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y][x+1] == 10 ):
+                return True
+            return False
+        #rm
+        elif type_block == 11:
+            #check if collide with map
+            if(x >= x_length - 2):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y][x+1]== 12 and map[y][x+2] == 13 and map[y][x+3] == 14 ):
+                return True
+            return False
+        #rl
+        elif type_block == 15:
+            #check if collide with map
+            if(x >= x_length - 3):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y][x+1] == 16 and map[y][x+2] == 17 and map[y][x+3] == 18 and map[y][x+4] == 19):
+                return True
+            return False
+        #rf
+        elif type_block == 20:
+            #check if collide with map
+            if(x >= x_length or y < 1):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y-1][x] == 22 and map[y][x+1] == 21 and 
+                                    map[y-1][x+1] != 23):
+                return True
+            return False
+        #tnt
+        elif type_block == 24:
+            #check if collide with map
+            if(x >= x_length or y < 1):
+                return False
+            #check if adjacent block is not empty
+            elif(map[y-1][x] == 26 and map[y][x+1] == 25 and
+                                    map[y-1][x+1] == 27):
+                return True
+            return False
+        else:
+            print("ERROR")
+
+
+
     """
     check with collisions with other blocks and with the map size 
     """
@@ -386,7 +468,7 @@ class WideAngryBirdsRepresentation(Representation):
         else:
             print("ERROR")
 
-    def fillin(self,map):
+    def fillin(self,map, start):
         coords = []
 
         # map looks like this 
@@ -396,22 +478,33 @@ class WideAngryBirdsRepresentation(Representation):
         x_length = len(map[0])
         y_length = len(map)
 
+
+        corners = [2,3,9,11,15,20,24]
+
         #each row is a y value
         #each col is a x value
-        for y in range(y_length):
-            for x in range(x_length):
-                #print("COORDS: ",x,y, "max:", x_length, y_length)
-                #to iterate the map, the x value is the first index. the y value is the second index 
-                if(map[y][x] >= 2 and map[y][x] <= 24):
-                    coords.append([map[y][x],y,x])
-        
+        if start: 
+            for y in range(y_length):
+                for x in range(x_length):
+                    #print("COORDS: ",x,y, "max:", x_length, y_length)
+                    #to iterate the map, the x value is the first index. the y value is the second index 
+                    if(map[y][x] in corners):
+                        coords.append([map[y][x],y,x])
+        #this is for fill-ing after we created initial level
+        else: 
+            for y in range(y_length):
+                for x in range(x_length):
+                    #print("COORDS: ",x,y, "max:", x_length, y_length)
+                    #to iterate the map, the x value is the first index. the y value is the second index 
+                    if(map[y][x] in corners and self.check_filled_correctly(map[y][x],y,x, map)):
+                        coords.append([map[y][x],y,x])
         #print("COORDS: \n", coords)
 
         for each in coords:
             #each[0] is type
             #each[1] is row in the map (so height)
             #each[2] is the col in the map (so width)
-            if(self.check_collision(each[0],each[1],each[2],map)):
+            if(self.check_collision(each[0],each[1],each[2],map) and start):
                 #just remove the block if it collides with something
                 #print("REMOVED BLOCK")
                 map[each[1]][each[2]] = 0
@@ -489,4 +582,4 @@ class WideAngryBirdsRepresentation(Representation):
 
         #FILL IN THE BLOCKS
         #print(map)
-        return self.fillin(new_map)
+        return self.fillin(new_map, True)
