@@ -52,7 +52,7 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, **kwar
     env_name = '{}-{}-v0'.format(game, representation)
     exp_name = get_exp_name(game, representation, experiment, **kwargs)
     resume = kwargs.get('resume', False)
-    if representation == 'wide':
+    if representation == 'wide' or representation == 'wideangrybirds':
         policy = FullyConvPolicyBigMap
         if game == "sokoban":
             policy = FullyConvPolicySmallMap
@@ -60,19 +60,26 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, **kwar
         policy = CustomPolicyBigMap
         if game == "sokoban":
             policy = CustomPolicySmallMap
+    
     if game == "binary":
         kwargs['cropped_size'] = 28
     elif game == "zelda":
         kwargs['cropped_size'] = 22
     elif game == "sokoban":
         kwargs['cropped_size'] = 10
+    elif game == "angrybirds":
+        kwargs['cropped_size'] = 51
+    
+    #policy = FullyConvPolicyBigMap
+    #kwargs['cropped_size'] = 22
     n = max_exp_idx(exp_name)
     global log_dir
     if not resume:
         n = n + 1
     log_dir = 'runs/{}_{}_{}'.format(exp_name, n, 'log')
     if not resume:
-        os.mkdir(log_dir)
+        pass
+        #os.mkdir(log_dir)
     else:
         model = load_model(log_dir)
     kwargs = {
@@ -94,13 +101,17 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, **kwar
         model.learn(total_timesteps=int(steps), tb_log_name=exp_name, callback=callback)
 
 ################################## MAIN ########################################
-game = 'binary'
-representation = 'narrow'
+#game = 'binary'
+#representation = 'narrow'
+game = 'angrybirds'
+representation = 'wideangrybirds'
+#game = 'zelda'
+#representation = 'wide'
 experiment = None
 steps = 1e8
 render = False
 logging = True
-n_cpu = 50
+n_cpu = 1
 kwargs = {
     'resume': False
 }

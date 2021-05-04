@@ -13,6 +13,7 @@ def infer(game, representation, model_path, **kwargs):
      - infer_kwargs: Args to pass to the environment.
     """
     env_name = '{}-{}-v0'.format(game, representation)
+    
     if game == "binary":
         model.FullyConvPolicy = model.FullyConvPolicyBigMap
         kwargs['cropped_size'] = 28
@@ -22,6 +23,9 @@ def infer(game, representation, model_path, **kwargs):
     elif game == "sokoban":
         model.FullyConvPolicy = model.FullyConvPolicySmallMap
         kwargs['cropped_size'] = 10
+    elif game == "angrybirds":
+        model.FullyConvPolicy = model.FullyConvPolicyBigMap
+        kwargs['cropped_size'] = 51
     kwargs['render'] = True
 
     agent = PPO2.load(model_path)
@@ -42,8 +46,10 @@ def infer(game, representation, model_path, **kwargs):
     return obs
 
 ################################## MAIN ########################################
-game = 'binary'
-representation = 'narrow'
+#game = 'binary'
+#representation = 'narrow'
+game = 'angrybirds'
+representation = 'wideangrybirds'
 model_path = 'models/{}/{}/model_1.pkl'.format(game, representation)
 kwargs = {
     'change_percentage': 0.4,

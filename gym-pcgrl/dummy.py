@@ -1,5 +1,6 @@
 import gym
 import gym_pcgrl
+import time
 
 #env = gym.make('sokoban-narrow-v0')
 
@@ -22,12 +23,7 @@ for t in range(1000000000):
   action = env2.action_space.sample()
   obs, reward, done, info = env2.step(action)
   env2.render('human')
-  
-  '''
-  stall = 0
-  while stall < 10000000000:
-    stall += 1
-  '''
+
 
   if done:
     print("Episode finished after {} timesteps".format(t+1))

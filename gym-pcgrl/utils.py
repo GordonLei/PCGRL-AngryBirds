@@ -46,7 +46,7 @@ def make_env(env_name, representation, rank=0, log_dir=None, **kwargs):
     max_step = kwargs.get('max_step', None)
     render = kwargs.get('render', False)
     def _thunk():
-        if representation == 'wide':
+        if representation == 'wide' or representation == 'wideangrybirds':
             env = wrappers.ActionMapImagePCGRLWrapper(env_name, **kwargs)
         else:
             crop_size = kwargs.get('cropped_size', 28)

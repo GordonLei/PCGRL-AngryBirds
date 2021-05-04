@@ -3,6 +3,38 @@ from PIL import Image
 from gym import spaces
 import numpy as np
 import xml.etree.ElementTree as ET
+import random
+import time
+
+rt_corner=0
+rh_corner=1
+rs_corner=2
+rm_corner=3
+rl_corner=4
+rf_corner=5
+tnt_corner=6
+pig=7
+empty=8 #8
+solid=9 #9
+rh_l=10
+rh_r=11
+rh_lr=12
+rh_ul=13
+rh_ur=14
+rs_o1=15
+rm_o1=16
+rm_o2=17
+rm_o3=18
+rl_o1=19
+rl_o2=20
+rl_o3=21
+rl_o4=22
+rf_lr=23
+rf_ul=24
+rf_ur=25
+tnt_lr=26
+tnt_ul=27
+tnt_ur=28
 
 """
 The wide representation where the agent can pick the tile position and tile value at each update.
@@ -43,10 +75,8 @@ class WideAngryBirdsRepresentation(Representation):
         consists of the x position, y position, and the tile value
     """
     def get_action_space(self, width, height, num_tiles):
-        #originally was spaces.MultiDiscrete([width, height, num_tiles]) which returns 
-        #return 
-
-        return spaces.MultiDiscrete([width, height, num_tiles])
+        #return spaces.MultiDiscrete([width, height, num_tiles])
+        return spaces.MultiDiscrete([width, height, 8])
 
     """
     Get the observation space used by the wide representation
@@ -62,6 +92,7 @@ class WideAngryBirdsRepresentation(Representation):
     def get_observation_space(self, width, height, num_tiles):
         return spaces.Dict({
             "map": spaces.Box(low=0, high=num_tiles-1, dtype=np.uint8, shape=(height, width))
+            #"map": spaces.Box(low=0, high=7, dtype=np.uint8, shape=(height, width))
         })
 
     """
@@ -130,10 +161,10 @@ class WideAngryBirdsRepresentation(Representation):
         pigs_array = []
         platform_array = []
         birds_array = ['BirdRed']
-        corners = [2,3,9,11,15,20]
+        corners = [rt_corner,rh_corner,rs_corner,rm_corner,rl_corner,rf_corner]
         block_type = ["RectTiny", "SquareHole", "RectSmall", "RectMedium", "RectBig", "RectFat"]
-        pigs_num = 28
-        tnt_num = 24
+        pigs_num = pig
+        tnt_num = tnt_corner
         platform_num = 29
         # map looks like this 
         # top-most row is the top most level
@@ -288,11 +319,73 @@ class WideAngryBirdsRepresentation(Representation):
 
         self._pretty_print(root) #make the XML prettier
         tree = ET.ElementTree(root)
-        path = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\Assets\\StreamingAssets\\Levels\\level-6.xml"
+        #path = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\Assets\\StreamingAssets\\Levels\\level-6.xml"
+        path = "C:\\Users\\nekonek0\\Desktop\\Computer_Science\\GitHub_repos\\science-birds\\Assets\\Resources\\Levels\\level-1.xml"
+        
         with open(path, 'wb') as files:
             files.write(b'<?xml version="1.0" encoding="UTF-16"?>\n')
             tree.write(files,xml_declaration=False,encoding='utf-8')
 
+    """
+    this will try to remove any "phantom" corner blocks that are not filled in for some reason 
+    """
+
+    def fix(self, map):
+        x_length = len(map[0])
+        y_length = len(map)
+        #each row is a y value
+        #each col is a x value
+        for y in range(y_length):
+            for x in range(x_length):
+                #append the coords that are corners and have nothing near them 
+                if(map[y][x] >= 0 and map[y][x] <= 6):
+                    #rt
+                    if map[y][x]  == rt_corner:
+                        continue 
+                    #rh
+                    elif map[y][x]  == rh_corner:
+                        #subtract to go upwards the row/height
+                        if map[y-1][x] != rh_l or\
+                            map[y-2][x] != rh_l or\
+                            map[y-3][x] != rh_ul or\
+                            map[y][x+1] != rh_lr or\
+                            map[y-1][x+1] != rh_r or\
+                            map[y-2][x+1] != rh_r or\
+                            map[y-3][x+1] != rh_ur:
+                                map[y][x] = empty
+                    #rs
+                    elif map[y][x]  == rs_corner:
+                        if map[y][x+1] != rs_o1:
+                            map[y][x] = empty
+                        #map[x+1][y] = 8
+                    #rm
+                    elif map[y][x]  == rm_corner:
+                        if map[y][x+1] == rm_o1 or\
+                            map[y][x+2] == rm_o2 or\
+                            map[y][x+3] == rm_o3:
+                                map[y][x] = empty
+                    #rl
+                    elif map[y][x]  == rl_corner:
+                        if map[y][x+1] != rl_o1 or\
+                            map[y][x+2] != rl_o2 or\
+                            map[y][x+3] != rl_o3 or\
+                            map[y][x+4] != rl_o4:
+                                map[y][x] = empty
+                    #rf
+                    elif map[y][x]  == rf_corner:
+                        if map[y-1][x] != rf_ul or\
+                            map[y][x+1] != rf_lr or\
+                            map[y-1][x+1] != rf_ur:
+                                map[y][x] = empty
+                    #tnt
+                    elif map[y][x]  == tnt_corner:
+                        if map[y-1][x] != tnt_ul or\
+                            map[y][x+1] != tnt_lr or\
+                            map[y-1][x+1] != tnt_ur:
+                                map[y][x] = empty
+                    #error
+                    else:
+                        print("ERROR in FIX", map[y][x] )
 
     """
     Update the wide representation with the input action
@@ -305,93 +398,81 @@ class WideAngryBirdsRepresentation(Representation):
     """
     def update(self, action):
         change = [0,1][self._map[action[1]][action[0]] != action[2]]
-        self._map[action[1]][action[0]] = action[2]
+        #only update on an empty square or a pig
+
+        #sometimes a block that isn't the corner is randomly selected to be the new change 
+        #if this happens, just pick a random new block as the new change
+        '''
+        print("action[2]: ",action[2])
+        if action[2] not in range(0,8):
+            action[2] = random.randint(0,7)
+            print("randint", action[2])
+        '''
+
+        if(self._map[action[1]][action[0]] == empty):
+            self._map[action[1]][action[0]] = action[2]
+        elif(self._map[action[1]][action[0]] == pig):
+            #if attempt to replace with a pig or, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
+            print("pig update start", action[2])
+            if(action[2] == pig or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
+                blocks_by_size = [rl_corner,rh_corner,rm_corner,rf_corner,rs_corner,empty]
+                for each in blocks_by_size:
+                    #print("Attempt replace pig with ", each)
+                    
+                    if(not self.check_collision(each, action[1], action[0], self._map)):
+                        #print("Replace successful with ", each)
+                        self._map[action[1]][action[0]] = each
+                        break
+            else:
+                #print("Initial replace pig good with ", action[2])
+                self._map[action[1]][action[0]] = action[2]
+        elif(self._map[action[1]][action[0]] == tnt_corner):
+            #print(self._map)
+            #print("attempt remove tnt_corner at ", action[1], action[0])
+            #remove the tnt_corner 
+            #remove the TNT_corner on the map
+            try:
+                #print("curr element at: ", action[1], action[0], " is ", self._map[action[1]][action[0]])
+                #print("curr element at: ", action[1] - 1, action[0], " is ", self._map[action[1] - 1][action[0]])
+                #print("curr element at: ", action[1], action[0] + 1, " is ", self._map[action[1]][action[0] + 1])
+                #print("curr element at: ", action[1] - 1, action[0] + 1, " is ", self._map[action[1] - 1][action[0] + 1])
+                #print(action[1], action[0])
+                if self._map[action[1]][action[0]] == tnt_corner:
+                   self._map[action[1]][action[0]] = empty
+                if self._map[action[1] - 1][action[0]] == tnt_ul:
+                    self._map[action[1] - 1][action[0]] = empty
+                if self._map[action[1]][action[0] + 1] == tnt_lr:
+                    self._map[action[1]][action[0] + 1] = empty 
+                if self._map[action[1] - 1][action[0] + 1] == tnt_ur:
+                    self._map[action[1] - 1][action[0] + 1] = empty
+            #idk why there is sometimes a phantom tnt_corner at the edge of the map that is not rendered
+            except:
+                print("===================")
+                print("phantom tnt_corner ")
+                print("===================")
+                pass
+
+            print("tnt update start", action[2])
+            #if attempt to replace with a tnt_corner, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
+            if(action[2] == tnt_corner or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
+                blocks_by_size = [rl_corner,rh_corner,rm_corner,rf_corner,rs_corner,empty]
+                for each in blocks_by_size:
+                    #print("Attempt replace tnt_corner with ", each)
+                    
+                    if(not self.check_collision(each, action[1], action[0], self._map)):
+                        self._map[action[1]][action[0]] = each
+                        break
+            else:
+                #print("Initial replace tnt_corner good with ", action[2])
+                self._map[action[1]][action[0]] = action[2]
+
         #print("CURRENT MAP:\n", self._map)
-
-        self.fillin(self._map,False)
-
         self.writeXML(self._map)
+        self.fillin(self._map)
+        self.fix(self._map)
+
         return change, action[0], action[1]
     
-    """
-    check if the block is filled in correctly 
-    this should be redundant code to check_collision 
-    """
-
-    def check_filled_correctly(self,type_block,y,x,map):
-        # map looks like this 
-        # top-most row is the top most level
-        # bottom-most row is the bottom most level
-        x_length = len(map[0]) - 1 #subtract one since this is supposed to represent possible indexes of the map
-        y_length = len(map)
-        #print("CURR_COORD: ",x,y)
-        #rt
-        if type_block == 2:
-            return True
-        #rh
-        elif type_block == 3:
-            #check if collide with map
-            if(x >= x_length or y < 3):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y-1][x] == 4 and map[y][x+1] == 6 and
-                map[y-2][x] == 4 and map[y-1][x+1] == 5 and 
-                map[y-3][x] == 7 and map[y-2][x+1] == 5 and
-                                    map[y-3][x+1] == 8 ):
-                    return True
-            return False
-        #rs
-        elif type_block == 9:
-            #check if collide with map
-            if(x >= x_length):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y][x+1] == 10 ):
-                return True
-            return False
-        #rm
-        elif type_block == 11:
-            #check if collide with map
-            if(x >= x_length - 2):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y][x+1]== 12 and map[y][x+2] == 13 and map[y][x+3] == 14 ):
-                return True
-            return False
-        #rl
-        elif type_block == 15:
-            #check if collide with map
-            if(x >= x_length - 3):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y][x+1] == 16 and map[y][x+2] == 17 and map[y][x+3] == 18 and map[y][x+4] == 19):
-                return True
-            return False
-        #rf
-        elif type_block == 20:
-            #check if collide with map
-            if(x >= x_length or y < 1):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y-1][x] == 22 and map[y][x+1] == 21 and 
-                                    map[y-1][x+1] != 23):
-                return True
-            return False
-        #tnt
-        elif type_block == 24:
-            #check if collide with map
-            if(x >= x_length or y < 1):
-                return False
-            #check if adjacent block is not empty
-            elif(map[y-1][x] == 26 and map[y][x+1] == 25 and
-                                    map[y-1][x+1] == 27):
-                return True
-            return False
-        else:
-            print("ERROR")
-
-
-
     """
     check with collisions with other blocks and with the map size 
     """
@@ -404,71 +485,94 @@ class WideAngryBirdsRepresentation(Representation):
         y_length = len(map)
         #print("CURR_COORD: ",x,y)
         #rt
-        if type_block == 2:
+        if type_block == rt_corner or type_block == empty or type_block == pig:
             return False
         #rh
-        elif type_block == 3:
+        elif type_block == rh_corner:
             #check if collide with map
             if(x >= x_length or y < 3):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y-1][x] == rh_l and map[y][x+1] == rh_lr and 
+                map[y-2][x] == rh_l and map[y-1][x+1] == rh_r and 
+                map[y-3][x] == rh_ul and map[y-2][x+1] == rh_r and 
+                                    map[y-3][x+1] == rh_ur ):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y-1][x] != 0 or map[y][x+1] != 0 or 
-                map[y-2][x] != 0 or map[y-1][x+1] != 0 or 
-                map[y-3][x] != 0 or map[y-2][x+1] != 0 or 
-                                    map[y-3][x+1] != 0 ):
+            elif(map[y-1][x] != empty or map[y][x+1] != empty or 
+                map[y-2][x] != empty or map[y-1][x+1] != empty or 
+                map[y-3][x] != empty or map[y-2][x+1] != empty or 
+                                    map[y-3][x+1] != empty ):
                     return True
             return False
         #rs
-        elif type_block == 9:
+        elif type_block == rs_corner:
             #check if collide with map
             if(x >= x_length):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y][x+1] == rs_o1 ):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y][x+1] != 0 ):
+            elif(map[y][x+1] != empty ):
                 return True
             return False
         #rm
-        elif type_block == 11:
+        elif type_block == rm_corner:
             #check if collide with map
             if(x >= x_length - 2):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y][x+1] ==rm_o1 or map[y][x+2] == rm_o2 or map[y][x+3] == rm_o3 ):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y][x+1] != 0 or map[y][x+2] != 0 or map[y][x+3] != 0 ):
+            elif(map[y][x+1] != empty or map[y][x+2] != empty or map[y][x+3] != empty ):
                 return True
             return False
         #rl
-        elif type_block == 15:
+        elif type_block == rl_corner:
             #check if collide with map
             if(x >= x_length - 3):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y][x+1] ==rl_o1 or map[y][x+2] == rl_o2 or map[y][x+3] == rl_o3 and map[y][x+4] == rl_o4):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y][x+1] != 0 or map[y][x+2] != 0 or map[y][x+3] != 0 or map[y][x+4] != 0):
+            elif(map[y][x+1] != empty or map[y][x+2] != empty or map[y][x+3] != empty or map[y][x+4] != empty):
                 return True
             return False
         #rf
-        elif type_block == 20:
+        elif type_block == rf_corner:
             #check if collide with map
             if(x >= x_length or y < 1):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y-1][x] == rf_ul or map[y][x+1] == rf_lr or 
+                                    map[y-1][x+1] == rf_ur):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y-1][x] != 0 or map[y][x+1] != 0 or 
-                                    map[y-1][x+1] != 0):
+            elif(map[y-1][x] != empty or map[y][x+1] != empty or 
+                                    map[y-1][x+1] != empty):
                 return True
             return False
         #tnt
-        elif type_block == 24:
+        elif type_block == tnt_corner:
             #check if collide with map
             if(x >= x_length or y < 1):
                 return True
+            #if the block is filled correctly, just exit out
+            elif(map[y-1][x] == tnt_ul or map[y][x+1] == tnt_lr or 
+                                    map[y-1][x+1] == tnt_ur):
+                    return False
             #check if adjacent block is not empty
-            elif(map[y-1][x] != 0 or map[y][x+1] != 0 or 
-                                    map[y-1][x+1] != 0):
+            elif(map[y-1][x] != empty or map[y][x+1] != empty or 
+                                    map[y-1][x+1] != empty):
                 return True
             return False
         else:
-            print("ERROR")
+            print("ERROR IN CC", type_block)
 
-    def fillin(self,map, start):
+    def fillin(self,map):
         coords = []
 
         # map looks like this 
@@ -478,36 +582,25 @@ class WideAngryBirdsRepresentation(Representation):
         x_length = len(map[0])
         y_length = len(map)
 
-
-        corners = [2,3,9,11,15,20,24]
-
         #each row is a y value
         #each col is a x value
-        if start: 
-            for y in range(y_length):
-                for x in range(x_length):
-                    #print("COORDS: ",x,y, "max:", x_length, y_length)
-                    #to iterate the map, the x value is the first index. the y value is the second index 
-                    if(map[y][x] in corners):
-                        coords.append([map[y][x],y,x])
-        #this is for fill-ing after we created initial level
-        else: 
-            for y in range(y_length):
-                for x in range(x_length):
-                    #print("COORDS: ",x,y, "max:", x_length, y_length)
-                    #to iterate the map, the x value is the first index. the y value is the second index 
-                    if(map[y][x] in corners and self.check_filled_correctly(map[y][x],y,x, map)):
-                        coords.append([map[y][x],y,x])
+        for y in range(y_length):
+            for x in range(x_length):
+                #print("COORDS: ",x,y, "max:", x_length, y_length)
+                #to iterate the map, the x value is the first index. the y value is the second index 
+                if(map[y][x] >= 0 and map[y][x] <= 6):
+                    coords.append([map[y][x],y,x])
+        
         #print("COORDS: \n", coords)
 
         for each in coords:
             #each[0] is type
             #each[1] is row in the map (so height)
             #each[2] is the col in the map (so width)
-            if(self.check_collision(each[0],each[1],each[2],map) and start):
+            if(self.check_collision(each[0],each[1],each[2],map)):
                 #just remove the block if it collides with something
                 #print("REMOVED BLOCK")
-                map[each[1]][each[2]] = 0
+                map[each[1]][each[2]] = empty
                 continue 
             #if there is no collission, fill it in
             else:
@@ -515,53 +608,55 @@ class WideAngryBirdsRepresentation(Representation):
                 x = each[2]
                 #print("FILL-IN @", y,x, "BLOCK TYPE: ", each[0])
                 #rt
-                if each[0] == 2:
+                if each[0] == rt_corner:
                     continue 
                 #rh
-                elif each[0] == 3:
+                elif each[0] == rh_corner:
                     #subtract to go upwards the row/height
-                    map[y-1][x] = 4
-                    map[y-2][x] = 4 
-                    map[y-3][x] = 7 
+                    map[y-1][x] = rh_l
+                    map[y-2][x] = rh_l
+                    map[y-3][x] = rh_ul 
 
                     #x stay + to move to the right
-                    map[y][x+1] = 6 
-                    map[y-1][x+1] = 5 
-                    map[y-2][x+1] = 5 
-                    map[y-3][x+1] = 8 
+                    map[y][x+1] = rh_lr
+                    map[y-1][x+1] = rh_r 
+                    map[y-2][x+1] = rh_r
+                    map[y-3][x+1] = rh_ur
 
                 #rs
-                elif each[0] == 9:
-                    map[y][x+1] = 10
+                elif each[0] == rs_corner:
+                    map[y][x+1] = rs_o1
                     #map[x+1][y] = 8
                 #rm
-                elif each[0] == 11:
-                    map[y][x+1] = 12
-                    map[y][x+2] = 13
-                    map[y][x+3] = 14
+                elif each[0] == rm_corner:
+                    map[y][x+1] = rm_o1
+                    map[y][x+2] = rm_o2
+                    map[y][x+3] = rm_o3
 
                 #rl
-                elif each[0] == 15:
-                    map[y][x+1] = 16
-                    map[y][x+2] = 17
-                    map[y][x+3] = 18
-                    map[y][x+4] = 19
+                elif each[0] == rl_corner:
+                    map[y][x+1] = rl_o1
+                    map[y][x+2] = rl_o2
+                    map[y][x+3] = rl_o3
+                    map[y][x+4] = rl_o4
 
                 #rf
-                elif each[0] == 20:
-                    map[y-1][x] = 22
-                    map[y][x+1] = 21
-                    map[y-1][x+1] = 23
+                elif each[0] == rf_corner:
+                    map[y-1][x] = rf_ul
+                    map[y][x+1] = rf_lr
+                    map[y-1][x+1] = rf_ur
 
                 #tnt
-                elif each[0] == 24:
-                    map[y-1][x] = 26
-                    map[y][x+1] = 25
-                    map[y-1][x+1] = 27
+                elif each[0] == tnt_corner:
+                    map[y-1][x] = tnt_ul
+                    map[y][x+1] = tnt_lr
+                    map[y-1][x+1] = tnt_ur
 
                 #error
                 else:
-                    print("ERROR")
+                    print("ERROR in FI", each[0])
+        
+        #print(map)
         return map
 
 
@@ -569,7 +664,7 @@ class WideAngryBirdsRepresentation(Representation):
     Override gen_random_map
     """
     def gen_random_map(self,random, width, height, prob):
-        print("DOING IT HERE")
+        #print("DOING IT HERE")
         #print("MAP VALUES", list(prob.values()))
         #print(sum(list(prob.values())))
 
@@ -582,4 +677,4 @@ class WideAngryBirdsRepresentation(Representation):
 
         #FILL IN THE BLOCKS
         #print(map)
-        return self.fillin(new_map, True)
+        return self.fillin(new_map)

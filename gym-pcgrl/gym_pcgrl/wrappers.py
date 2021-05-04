@@ -233,6 +233,7 @@ Used for wide experiments
 """
 class ActionMapImagePCGRLWrapper(gym.Wrapper):
     def __init__(self, game, **kwargs):
+        print("Hi")
         self.pcgrl_env = gym.make(game)
         self.pcgrl_env.adjust_param(**kwargs)
         # Indices for flatting

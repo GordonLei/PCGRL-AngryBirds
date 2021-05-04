@@ -321,7 +321,7 @@ def gen_random_map(random, width, height, prob):
     #print(map)
 
     #return map
-    print("DONE HERE FOR SOME REASON")
+    #print("DONE HERE FOR SOME REASON")
     map = random.choice(list(prob.keys()),size=(height,width),p=list(prob.values())).astype(np.uint8)
     #print(map)
     return map

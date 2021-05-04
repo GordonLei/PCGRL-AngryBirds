@@ -5,7 +5,39 @@ import numpy as np
 import xml.etree.ElementTree as ET
 from PIL import Image
 from gym_pcgrl.envs.probs.problem import Problem
-from gym_pcgrl.envs.helper import *
+from gym_pcgrl.envs.helper import get_range_reward, get_tile_locations, calc_certain_tile, calc_num_regions
+from gym_pcgrl.envs.probs.mdungeon.engine import State,BFSAgent,AStarAgent
+
+rt_corner=0
+rh_corner=1
+rs_corner=2
+rm_corner=3
+rl_corner=4
+rf_corner=5
+tnt_corner=6
+pig=7
+empty=8 #8
+solid=9 #9
+rh_l=10
+rh_r=11
+rh_lr=12
+rh_ul=13
+rh_ur=14
+rs_o1=15
+rm_o1=16
+rm_o2=17
+rm_o3=18
+rl_o1=19
+rl_o2=20
+rl_o3=21
+rl_o4=22
+rf_lr=23
+rf_ul=24
+rf_ur=25
+tnt_lr=26
+tnt_ul=27
+tnt_ur=28
+
 
 """
 
@@ -18,6 +50,8 @@ class AngryBirdsProblem(Problem):
     def __init__(self):
         super().__init__()
 
+        # solver_power
+        self._solver_power = 5000
 
         # the floor is y = -3.25
         # the ceiling is y = 2.0 
@@ -29,14 +63,14 @@ class AngryBirdsProblem(Problem):
         #FAT blocks are .5; regular are .25 radius
 
         # x is 15 wide so you probably want around 15*2 for width
-        self._width = 30 #amount of .5 segments
+        self._width = 30 #11#30 #amount of .5 segments
 
         # x is 15 wide so you probably want around 15/(.215*2) for width
         # times 2 since it is .215 from center of object to the origin so double to get full max height 
         #self._width = 35 #amount of .5 segments
 
         # y is around 5.25 tall so 5.25*4 for height
-        self._height = 21 #amount of .25 segments
+        self._height = 21 #7#21 #amount of .25 segments
 
         # y is around 5.25 tall so 5.25/(.110*2) for height
         # times 2 since it is .215 from center of object to the origin so double to get full max height 
@@ -47,38 +81,44 @@ class AngryBirdsProblem(Problem):
 
         # probably table of how likely a certain tile would be generated for initial state
         self._prob = {
-            "empty":0.80,
+            "rt_corner":0.01,
+            "rh_corner":0.02,
+            "rs_corner":0.01,
+            "rm_corner":0.02,
+            "rl_corner":0.01,
+            "rf_corner":0.01,
+            "tnt_corner":0.01,
+
+            "empty":0.90,
             "solid":0.00,
 
-            "rt_corner":0.04,
-
-            "rh_corner":0.04,
+            
             "rh_l":0.00,
             "rh_r":0.00,
             "rh_lr":0.00,
             "rh_ul":0.00,
             "rh_ur":0.00,
 
-            "rs_corner":0.02,
+            
             "rs_o1":0.00,
 
-            "rm_corner":0.06,
+            
             "rm_o1":0.00,
             "rm_o2":0.00,
             "rm_o3":0.00,
 
-            "rl_corner":0.01,
+            
             "rl_o1":0.00,
             "rl_o2":0.00,
             "rl_o3":0.00,
             "rl_o4":0.00,
 
-            "rf_corner":0.01,
+            
             "rf_lr":0.00,
             "rf_ul":0.00,
             "rf_ur":0.00,
 
-            "tnt_corner":0.01,
+            
             "tnt_lr":0.00,
             "tnt_ul":0.00,
             "tnt_ur":0.00,
@@ -95,17 +135,19 @@ class AngryBirdsProblem(Problem):
         
         self._border_tile = "solid"
         # max_enemies would be number of pigs
-        self._max_pigs = 10
+        self._max_pigs = 5
         self._max_birds = 5
         self._max_blocks = 30
-        self._max_tnt = 5
+        self._max_tnt = 3
 
         self._rewards = {
             # "player": 3,
             # "bird": 3,
             "pig": 1,
-            "blocks": 1,
+            "blocks": 5,
+            "tnt": 1
         }
+        self._map = [[]]
 
 
         #self._border_size = (1, 1)
@@ -120,48 +162,49 @@ class AngryBirdsProblem(Problem):
     """
     def get_tile_types(self):
         return [
-            "empty", #0
-            "solid", #1
+            "rt_corner",#0
+            "rh_corner",#1
+            "rs_corner",#2
+            "rm_corner",#3
+            "rl_corner",#4
+            "rf_corner",#5
+            "tnt_corner",#6
+            "pig",#7
 
-            "rt_corner",#2
-            "rh_corner",#3
-            "rh_l",#4
-            "rh_r",#5
-            "rh_lr",#6
-            "rh_ul",#7
-            "rh_ur",#8
+            
+            "empty", #8
+            "solid", #9
 
-            "rs_corner",#9
-            "rs_o1",#10
 
-            "rm_corner",#11
-            "rm_o1",#12
-            "rm_o2",#13
-            "rm_o3",#14
+            "rh_l",#10
+            "rh_r",#11
+            "rh_lr",#12
+            "rh_ul",#13
+            "rh_ur",#14
 
-            "rl_corner",#15
-            "rl_o1",#16
-            "rl_o2",#17
-            "rl_o3",#18
-            "rl_o4",#19
 
-            "rf_corner",#20
-            "rf_lr",#21
-            "rf_ul",#22
-            "rf_ur",#23
+            "rs_o1",#15
 
-            "tnt_corner",#24
-            "tnt_lr",#25
-            "tnt_ul",#26
-            "tnt_ur",#27
 
-            "pig",#28
+            "rm_o1",#16
+            "rm_o2",#17
+            "rm_o3",#18
 
-            # "redBird",
-            # "blueBird",
-            # "yellowBird",
-            # "whiteBird",
-            # "blackBird"
+
+            "rl_o1",#19
+            "rl_o2",#20
+            "rl_o3",#21
+            "rl_o4",#22
+
+
+            "rf_lr",#23
+            "rf_ul",#24
+            "rf_ur",#25
+
+            "tnt_lr",#26
+            "tnt_ul",#27
+            "tnt_ur",#28
+            
         ]
         
     def adjust_param(self, **kwargs):
@@ -180,7 +223,7 @@ class AngryBirdsProblem(Problem):
         # self._max_treasures = kwargs.get('max_treasures', self._max_treasures)
         #
         # self._target_col_enemies = kwargs.get('target_col_enemies', self._target_col_enemies)
-        self._target_solution = kwargs.get('target_solution', self._target_solution)
+        #self._target_solution = kwargs.get('target_solution', self._target_solution)
 
         rewards = kwargs.get('rewards')
         if rewards is not None:
@@ -188,6 +231,78 @@ class AngryBirdsProblem(Problem):
                 if t in self._rewards:
                     self._rewards[t] = rewards[t]
 
+    '''
+    check stability based on blocks underneath
+
+    Returns:
+        int: 0 if not stable, 1 if stable
+    '''
+
+    def _blocks_stability(self, map):
+        #print(map)
+        coords = []
+        # map looks like this 
+        # top-most row is the top most level
+        # bottom-most row is the bottom most level
+        # 0,0 is upper left corner 
+        x_length = len(map[0])
+        y_length = len(map)
+        #each row is a y value
+        #each col is a x value
+
+        corners = ["rt_corner","rh_corner","rs_corner","rm_corner","rl_corner","rf_corner"]
+
+        for y in range(y_length):
+            for x in range(x_length):
+                #print("COORDS: ",x,y, "max:", x_length, y_length)
+                #to iterate the map, the x value is the first index. the y value is the second index 
+                if(map[y][x] in corners):
+                    block_value = corners.index(map[y][x])
+                    coords.append([block_value,y,x])
+        #check each coord and see if there is a block underneath it 
+        for each in coords:
+            y = each[1]
+            x = each[2]
+            #if y-value is the max, it is on the floor therefore the block is stable 
+            if each[1] == y_length - 1:
+                continue
+            else:
+                if each[0] == rt_corner:
+                    if(map[y+1][x] == "empty"):
+                        return 0
+                #rh
+                elif each[0] == rh_corner:
+                    if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
+                        return 0
+                #rs
+                elif each[0] == rs_corner:
+                    if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
+                        return 0
+                #rm
+                elif each[0] == rm_corner:
+                   if( map[y+1][x+1] == "empty" and (map[y+1][x+2] == "empty" and map[y+1][x+3] == "empty") ):
+                            return 0
+                #rl
+                elif each[0] == rl_corner:
+                    if( map[y+1][x+1] == "empty" and (map[y+1][x+2] == "empty" and map[y+1][x+3] == "empty" and map[y+1][x+4] == "empty") ):
+                            return 0
+
+                #rf
+                elif each[0] == rf_corner:
+                    if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
+                        return 0
+
+                #tnt
+                elif each[0] == tnt_corner:
+                    if(map[y-1][x] == "empty" and map[y-1][x+1] == "empty"):
+                        return 0
+
+                #error
+                else:
+                    print("ERROR in stability check", each[0])
+
+        print("STABLE LEVEL")
+        return 1
     """
         Private function that test if current map is stable.
         Simulates the level to test for stability. 
@@ -201,8 +316,6 @@ class AngryBirdsProblem(Problem):
         #print(os.path.dirname(os.path.realpath(__file__)))
         input_path = os.path.abspath(os.path.join(__file__ ,"../../../../../compare_XML/input.xml"))
         output_path = os.path.abspath(os.path.join(__file__ ,"../../../../../compare_XML/output.xml"))
-        
-
         try: 
             parser = ET.XMLParser(encoding="utf-8")
             input_XML = ET.parse(input_path, parser= parser)
@@ -279,17 +392,18 @@ class AngryBirdsProblem(Problem):
     """
     def get_stats(self, map):
         map_locations = get_tile_locations(map, self.get_tile_types())
+        self._map = map
         map_stats = {
             "empty": calc_certain_tile(map_locations, ["empty"]),
             "pig": calc_certain_tile(map_locations, ["pig"]),
-            "TNT": calc_certain_tile(map_locations, ["tnt_corner"]),
+            "tnt": calc_certain_tile(map_locations, ["tnt_corner"]),
             # "birds": calc_certain_tile(map_locations, ["redBird", "blueBird", "yellowBird", "whiteBird", "blackBird"]),
 
             #REMOVED squareTiny and circles and trianglesfrom the 2 below
             "blocks": calc_certain_tile(
                 map_locations, ["rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
-            "regions": calc_num_regions(
-                map, map_locations, ["empty", "pig", "rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
+            #"regions": calc_num_regions(
+            #    map, map_locations, ["empty", "pig", "rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
         }
         #this part is to find other keys for map_states
         '''
@@ -333,19 +447,17 @@ class AngryBirdsProblem(Problem):
     def get_reward(self, new_stats, old_stats):
         # 3rd value is min; 4th value is the max 
         rewards = {
-            "empty": get_range_reward(new_stats["empty"], old_stats["empty"], 1, 1),
+            #"empty": get_range_reward(new_stats["empty"], old_stats["empty"], 1, 1),
             "pig": get_range_reward(new_stats["pig"], old_stats["pig"], 1, self._max_pigs),
-            "TNT": get_range_reward(new_stats["TNT"], old_stats["TNT"], 0, self._max_tnt),
+            "tnt": get_range_reward(new_stats["tnt"], old_stats["tnt"], 0, self._max_tnt),
             #"birds": get_range_reward(new_stats["birds"], old_stats["birds"], 1, self._max_birds),
             "blocks": get_range_reward(new_stats["blocks"], old_stats["blocks"], 1, self._max_blocks),
-            "regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
+            #"regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
         }
 
-        return rewards["empty"] +\
-            rewards["pig"] * self._rewards["pig"]  +\
-            rewards["TNT"] +\
-            rewards["blocks"] * self._rewards["blocks"]+\
-            rewards["regions"] #+ self._test_stability(map)
+        return rewards["pig"] * self._rewards["pig"]  +\
+            rewards["tnt"] * self._rewards["tnt"] +\
+            rewards["blocks"] * self._rewards["blocks"] + self._blocks_stability(self._map)
         # rewards["birds"] * self._rewards["birds"] +\
         #return self._get_variety_value(map, 1) + self._test_stability(map) + self._get_pig_potential(map, 1)
 
@@ -363,9 +475,13 @@ class AngryBirdsProblem(Problem):
             boolean: True if the level reached satisfying quality based on the stats and False otherwise
     """
     def get_episode_over(self, new_stats, old_stats):
-        percentage = 10
+        percentage = 0.65
         # return self._test_stability(map) == 1 and len(new_stats["empty"]) * 100 / self._height*self._width*100 < percentage
-        return new_stats["empty"] * 100 / self._height*self._width*100 < percentage
+        #print((new_stats["empty"] / (self._height*self._width)) < percentage)
+        return (new_stats["empty"] / (self._height*self._width)) < percentage and\
+            new_stats["pig"] <= self._max_pigs and new_stats["pig"] > 0 and\
+            new_stats["blocks"] <= self._max_blocks and\
+            new_stats["tnt"] <= self._max_tnt
         #return self._test_stability(map) == 1 and new_stats["empty"] * 100 / self._height*self._width*100 < percentage
 
     """
@@ -399,10 +515,10 @@ class AngryBirdsProblem(Problem):
         return {
             "empty": new_stats["empty"],
             "pig": new_stats["pig"], 
-            "TNT": new_stats["TNT"], 
+            "tnt": new_stats["tnt"], 
             #"birds": new_stats["birds"],
             "blocks": new_stats["blocks"], 
-            "regions": new_stats["regions"] 
+            #"regions": new_stats["regions"] 
         }
 
     """
@@ -462,5 +578,5 @@ class AngryBirdsProblem(Problem):
                 # "whiteBird": Image.open(os.path.dirname(__file__) + "/angrybirds/whiteBird.png").convert('RGBA'),
                 # "blackBird": Image.open(os.path.dirname(__file__) + "/angrybirds/blackBird.png").convert('RGBA'),
             }
-
+        self._map = map
         return super().render(map)
