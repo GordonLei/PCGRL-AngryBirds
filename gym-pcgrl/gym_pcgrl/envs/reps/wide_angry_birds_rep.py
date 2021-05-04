@@ -360,9 +360,9 @@ class WideAngryBirdsRepresentation(Representation):
                         #map[x+1][y] = 8
                     #rm
                     elif map[y][x]  == rm_corner:
-                        if map[y][x+1] == rm_o1 or\
-                            map[y][x+2] == rm_o2 or\
-                            map[y][x+3] == rm_o3:
+                        if map[y][x+1] != rm_o1 or\
+                            map[y][x+2] != rm_o2 or\
+                            map[y][x+3] != rm_o3:
                                 map[y][x] = empty
                     #rl
                     elif map[y][x]  == rl_corner:
@@ -398,73 +398,187 @@ class WideAngryBirdsRepresentation(Representation):
     """
     def update(self, action):
         change = [0,1][self._map[action[1]][action[0]] != action[2]]
-        #only update on an empty square or a pig
+        #only update on an empty.pig, or corner of a block/tnt
 
-        #sometimes a block that isn't the corner is randomly selected to be the new change 
-        #if this happens, just pick a random new block as the new change
-        '''
-        print("action[2]: ",action[2])
-        if action[2] not in range(0,8):
-            action[2] = random.randint(0,7)
-            print("randint", action[2])
-        '''
-
+        #initial clean out the block or set it to something if it is empty 
         if(self._map[action[1]][action[0]] == empty):
             self._map[action[1]][action[0]] = action[2]
-        elif(self._map[action[1]][action[0]] == pig):
-            #if attempt to replace with a pig or, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
-            print("pig update start", action[2])
-            if(action[2] == pig or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
-                blocks_by_size = [rl_corner,rh_corner,rm_corner,rf_corner,rs_corner,empty]
-                for each in blocks_by_size:
-                    #print("Attempt replace pig with ", each)
-                    
-                    if(not self.check_collision(each, action[1], action[0], self._map)):
-                        #print("Replace successful with ", each)
-                        self._map[action[1]][action[0]] = each
-                        break
-            else:
-                #print("Initial replace pig good with ", action[2])
-                self._map[action[1]][action[0]] = action[2]
-        elif(self._map[action[1]][action[0]] == tnt_corner):
-            #print(self._map)
-            #print("attempt remove tnt_corner at ", action[1], action[0])
-            #remove the tnt_corner 
-            #remove the TNT_corner on the map
-            try:
-                #print("curr element at: ", action[1], action[0], " is ", self._map[action[1]][action[0]])
-                #print("curr element at: ", action[1] - 1, action[0], " is ", self._map[action[1] - 1][action[0]])
-                #print("curr element at: ", action[1], action[0] + 1, " is ", self._map[action[1]][action[0] + 1])
-                #print("curr element at: ", action[1] - 1, action[0] + 1, " is ", self._map[action[1] - 1][action[0] + 1])
-                #print(action[1], action[0])
-                if self._map[action[1]][action[0]] == tnt_corner:
-                   self._map[action[1]][action[0]] = empty
-                if self._map[action[1] - 1][action[0]] == tnt_ul:
-                    self._map[action[1] - 1][action[0]] = empty
-                if self._map[action[1]][action[0] + 1] == tnt_lr:
-                    self._map[action[1]][action[0] + 1] = empty 
-                if self._map[action[1] - 1][action[0] + 1] == tnt_ur:
-                    self._map[action[1] - 1][action[0] + 1] = empty
-            #idk why there is sometimes a phantom tnt_corner at the edge of the map that is not rendered
-            except:
-                print("===================")
-                print("phantom tnt_corner ")
-                print("===================")
+        #start with pig or tnt_corner for now
+        #elif (self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == tnt_corner):
+        elif (self._map[action[1]][action[0]] < empty):
+            #keep track of the block that is to be changed
+            curr_block_num = self._map[action[1]][action[0]]
+            #erase pig 
+            if(self._map[action[1]][action[0]] == pig):
                 pass
+            #erase tnt_corner
+            elif(self._map[action[1]][action[0]] == tnt_corner):
+                #print(self._map)
+                #print("attempt remove tnt_corner at ", action[1], action[0])
+                #remove the tnt_corner 
+                #remove the TNT_corner on the map
+                try:
+                    #print("curr element at: ", action[1], action[0], " is ", self._map[action[1]][action[0]])
+                    #print("curr element at: ", action[1] - 1, action[0], " is ", self._map[action[1] - 1][action[0]])
+                    #print("curr element at: ", action[1], action[0] + 1, " is ", self._map[action[1]][action[0] + 1])
+                    #print("curr element at: ", action[1] - 1, action[0] + 1, " is ", self._map[action[1] - 1][action[0] + 1])
+                    #print(action[1], action[0])
+                    if self._map[action[1]][action[0]] == tnt_corner:
+                        #print("removed tc")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1] - 1][action[0]] == tnt_ul:
+                        #print("removed t_ul")
+                        self._map[action[1] - 1][action[0]] = empty
+                    if self._map[action[1]][action[0] + 1] == tnt_lr:
+                        #print("removed t_lr")
+                        self._map[action[1]][action[0] + 1] = empty 
+                    if self._map[action[1] - 1][action[0] + 1] == tnt_ur:
+                        #print("removed t_ur")
+                        self._map[action[1] - 1][action[0] + 1] = empty
+                #idk why there is sometimes a phantom tnt_corner at the edge of the map that is not rendered
+                except:
+                    print("===================")
+                    print("phantom tnt_corner ")
+                    print("===================")
+                    pass
+            #erase rf_corner
+            elif(self._map[action[1]][action[0]] == rf_corner):
+                try:
 
-            print("tnt update start", action[2])
+                    if self._map[action[1]][action[0]] == rf_corner:
+                        #print("removed rf_c")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1] - 1][action[0]] == rf_ul:
+                        #print("removed rf_ul")
+                        self._map[action[1] - 1][action[0]] = empty
+                    if self._map[action[1]][action[0] + 1] == rf_lr:
+                        #print("removed rf_lr")
+                        self._map[action[1]][action[0] + 1] = empty 
+                    if self._map[action[1] - 1][action[0] + 1] == rf_ur:
+                        #print("removed rf_ur")
+                        self._map[action[1] - 1][action[0] + 1] = empty
+                except:
+                    print("===================")
+                    print("phantom rf_corner ")
+                    print("===================")
+                    pass
+            #erase rh_corner
+            elif(self._map[action[1]][action[0]] == rh_corner):
+                try:
+
+                    if self._map[action[1]][action[0]] == rh_corner:
+                        #print("removed rf_c")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1] - 1][action[0]] == rh_l:
+                        #print("removed rh_l")
+                        self._map[action[1] - 1][action[0]] = empty
+                    if self._map[action[1] - 2][action[0]] == rh_l:
+                        #print("removed rh_l")
+                        self._map[action[1] - 2][action[0]] = empty
+                    if self._map[action[1] - 3][action[0]] == rh_ul:
+                        #print("removed rh_ul")
+                        self._map[action[1] - 3][action[0]] = empty
+                    
+                    if self._map[action[1]][action[0] + 1] == rh_lr:
+                        #print("removed rh_lr")
+                        self._map[action[1]][action[0] + 1] = empty
+                    if self._map[action[1] - 1][action[0] + 1] == rh_r:
+                        #print("removed rh_r")
+                        self._map[action[1] - 1][action[0] + 1] = empty
+                    if self._map[action[1] - 2][action[0] + 1] == rh_r:
+                        #print("removed rh_r")
+                        self._map[action[1] - 2][action[0] + 1] = empty
+                    if self._map[action[1] - 3][action[0] + 1] == rh_ur:
+                        #print("removed rh_ur")
+                        self._map[action[1] - 3][action[0] + 1] = empty
+                except:
+                    print("===================")
+                    print("phantom rh_corner ")
+                    print("===================")
+                    pass
+            #erase rs_corner
+            elif(self._map[action[1]][action[0]] == rs_corner):
+                try:
+
+                    if self._map[action[1]][action[0]] == rs_corner:
+                        #print("removed rs_c")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1]][action[0] + 1] == rs_o1:
+                        #print("removed rs_o1")
+                        self._map[action[1]][action[0] + 1] = empty
+                except:
+                    print("===================")
+                    print("phantom rs_corner ")
+                    print("===================")
+                    pass
+            #erase rm_corner
+            elif(self._map[action[1]][action[0]] == rm_corner):
+                try:
+
+                    if self._map[action[1]][action[0]] == rm_corner:
+                        #print("removed rm_c")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1]][action[0] + 1] == rm_o1:
+                        #print("removed rm_o1")
+                        self._map[action[1]][action[0] + 1] = empty
+                    if self._map[action[1]][action[0] + 2] == rm_o2:
+                        #print("removed rm_o2")
+                        self._map[action[1]][action[0] + 2] = empty
+                    if self._map[action[1]][action[0] + 3] == rm_o3:
+                        #print("removed rm_o3")
+                        self._map[action[1]][action[0] + 3] = empty
+                except:
+                    print("===================")
+                    print("phantom rm_corner ")
+                    print("===================")
+                    pass
+            #erase rl_corner
+            elif(self._map[action[1]][action[0]] == rl_corner):
+                try:
+
+                    if self._map[action[1]][action[0]] == rl_corner:
+                        #print("removed rl_c")
+                        self._map[action[1]][action[0]] = empty
+                    if self._map[action[1]][action[0] + 1] == rl_o1:
+                        #print("removed rl_o1")
+                        self._map[action[1]][action[0] + 1] = empty
+                    if self._map[action[1]][action[0] + 2] == rl_o2:
+                        #print("removed rl_o2")
+                        self._map[action[1]][action[0] + 2] = empty
+                    if self._map[action[1]][action[0] + 3] == rl_o3:
+                        #print("removed rl_o3")
+                        self._map[action[1]][action[0] + 3] = empty
+                    if self._map[action[1]][action[0] + 4] == rl_o4:
+                        #print("removed rl_o4")
+                        self._map[action[1]][action[0] + 4] = empty
+                except:
+                    print("===================")
+                    print("phantom rl_corner ")
+                    print("===================")
+                    pass
+            
+            #now update the block
+            block_array = ["rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner", "pig", "empty"]
+            
+            #print("curr_block_num: ", curr_block_num)
+            curr_block_name = block_array[curr_block_num]
+
+
+            #print(curr_block_name, "update start", action[2])
             #if attempt to replace with a tnt_corner, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
-            if(action[2] == tnt_corner or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
-                blocks_by_size = [rl_corner,rh_corner,rm_corner,rf_corner,rs_corner,empty]
+            if(action[2] == curr_block_num or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
+                blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,empty]
+                if curr_block_num in blocks_by_size:
+                    blocks_by_size.remove(curr_block_num)
                 for each in blocks_by_size:
                     #print("Attempt replace tnt_corner with ", each)
-                    
                     if(not self.check_collision(each, action[1], action[0], self._map)):
                         self._map[action[1]][action[0]] = each
                         break
             else:
                 #print("Initial replace tnt_corner good with ", action[2])
                 self._map[action[1]][action[0]] = action[2]
+
 
         #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)

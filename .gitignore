@@ -6,6 +6,9 @@
 !.vscode/extensions.json
 *.code-workspace
 
+#dont add the old run folder
+gym-pcgrl/old_angrybirds_runs/
+
 # Local History for Visual Studio Code
 .history/
 

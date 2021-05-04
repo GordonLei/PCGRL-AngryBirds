@@ -137,7 +137,7 @@ class AngryBirdsProblem(Problem):
         # max_enemies would be number of pigs
         self._max_pigs = 5
         self._max_birds = 5
-        self._max_blocks = 30
+        self._max_blocks = 100
         self._max_tnt = 3
 
         self._rewards = {
@@ -234,8 +234,7 @@ class AngryBirdsProblem(Problem):
     '''
     check stability based on blocks underneath
 
-    Returns:
-        int: 0 if not stable, 1 if stable
+    If level is stable, then it should return an int = number of blocks in the level
     '''
 
     def _blocks_stability(self, map):
@@ -250,59 +249,100 @@ class AngryBirdsProblem(Problem):
         #each row is a y value
         #each col is a x value
 
-        corners = ["rt_corner","rh_corner","rs_corner","rm_corner","rl_corner","rf_corner"]
+        corners = ["rt_corner","rh_corner","rs_corner","rm_corner","rl_corner","rf_corner","tnt_corner","pig"]
+        
+        stability_counter = 0
 
         for y in range(y_length):
             for x in range(x_length):
                 #print("COORDS: ",x,y, "max:", x_length, y_length)
                 #to iterate the map, the x value is the first index. the y value is the second index 
-                if(map[y][x] in corners):
+                if( map[y][x] in corners):
                     block_value = corners.index(map[y][x])
                     coords.append([block_value,y,x])
+
+        block_counter = len(coords)
+
+        #print(len(coords))
+        #print(coords)
         #check each coord and see if there is a block underneath it 
         for each in coords:
+            #print(each[0], each[1], each[2])
             y = each[1]
             x = each[2]
             #if y-value is the max, it is on the floor therefore the block is stable 
             if each[1] == y_length - 1:
-                continue
+                #print("on the floor increase", stability_counter)
+                stability_counter += 1
             else:
-                if each[0] == rt_corner:
+                if each[0] == rt_corner or each[0] == pig:
                     if(map[y+1][x] == "empty"):
-                        return 0
+                        stability_counter -= 1
+                    else:
+                        #print("rt bottom not empty", stability_counter, map[y+1][x])
+                        stability_counter += 1
                 #rh
                 elif each[0] == rh_corner:
-                    if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
-                        return 0
+                    if(map[y+1][x] == "empty" or map[y+1][x+1] == "empty"):
+                        #print("rh empty", stability_counter, map[y+1][x],map[y+1][x+1])
+                        stability_counter -= 1
+                    else:
+                        #print("rh bottom not empty", stability_counter, map[y+1][x],map[y+1][x+1])
+                        stability_counter += 1
                 #rs
                 elif each[0] == rs_corner:
                     if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
-                        return 0
+                        #print("rs bottom empty", stability_counter, map[y+1][x],map[y+1][x+1])
+                        stability_counter -= 1
+                    else:
+                        #print("rs bottom not empty", stability_counter, map[y+1][x],map[y+1][x+1])
+                        stability_counter += 1
                 #rm
                 elif each[0] == rm_corner:
-                   if( map[y+1][x+1] == "empty" and (map[y+1][x+2] == "empty" and map[y+1][x+3] == "empty") ):
-                            return 0
+                    empty_counter = 0
+                    for i in range(0,4):
+                        if map[y+1][x+i] == "empty":
+                            empty_counter += 1
+                    if(empty_counter >= 3):
+                        #print("rm bottom empty", stability_counter, map[y+1][x],map[y+1][x+1],map[y+1][x+2],map[y+1][x+3])
+                        stability_counter -= 1
+                    else:
+                        #print("rm bottom not empty", stability_counter, map[y+1][x],map[y+1][x+1],map[y+1][x+2],map[y+1][x+3])
+                        stability_counter += 1
                 #rl
                 elif each[0] == rl_corner:
-                    if( map[y+1][x+1] == "empty" and (map[y+1][x+2] == "empty" and map[y+1][x+3] == "empty" and map[y+1][x+4] == "empty") ):
-                            return 0
-
+                    #if( map[y+1][x+1] == "empty" and (map[y+1][x+2] == "empty" and map[y+1][x+3] == "empty" and map[y+1][x+4] == "empty") ):
+                        #stability_counter -= 1
+                    empty_counter = 0
+                    for i in range(0,5):
+                        if map[y+1][x+i] == "empty":
+                            empty_counter += 1
+                    if(empty_counter >= 3):
+                        #print("rl bottom empty", stability_counter, map[y+1][x],map[y+1][x+1],map[y+1][x+2],map[y+1][x+3],map[y+1][x+4])
+                        stability_counter -= 1
+                    else:
+                        #print("rl bottom not empty", stability_counter, map[y+1][x],map[y+1][x+1],map[y+1][x+2],map[y+1][x+3],map[y+1][x+4])
+                        stability_counter += 1
                 #rf
                 elif each[0] == rf_corner:
-                    if(map[y+1][x] == "empty" and map[y+1][x+1] == "empty"):
-                        return 0
-
+                    if(map[y+1][x] == "empty" or map[y+1][x+1] == "empty"):
+                        stability_counter -= 1
+                    else:
+                        stability_counter += 1
                 #tnt
                 elif each[0] == tnt_corner:
                     if(map[y-1][x] == "empty" and map[y-1][x+1] == "empty"):
-                        return 0
-
+                        stability_counter -= 1
+                    else:
+                        stability_counter += 1
                 #error
                 else:
                     print("ERROR in stability check", each[0])
-
-        print("STABLE LEVEL")
-        return 1
+        #print(stability_counter)
+        if(stability_counter >= block_counter):
+            print("STABLE LEVEL")
+            #time.sleep(500)
+        return stability_counter
     """
         Private function that test if current map is stable.
         Simulates the level to test for stability. 
@@ -402,6 +442,7 @@ class AngryBirdsProblem(Problem):
             #REMOVED squareTiny and circles and trianglesfrom the 2 below
             "blocks": calc_certain_tile(
                 map_locations, ["rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
+            "stability": self._blocks_stability(self._map)
             #"regions": calc_num_regions(
             #    map, map_locations, ["empty", "pig", "rt_corner", "rh_corner", "rs_corner", "rm_corner", "rl_corner", "rf_corner", "tnt_corner"]),
         }
@@ -446,6 +487,9 @@ class AngryBirdsProblem(Problem):
     """
     def get_reward(self, new_stats, old_stats):
         # 3rd value is min; 4th value is the max 
+
+        dimension = self._width*self._height
+
         rewards = {
             #"empty": get_range_reward(new_stats["empty"], old_stats["empty"], 1, 1),
             "pig": get_range_reward(new_stats["pig"], old_stats["pig"], 1, self._max_pigs),
@@ -453,11 +497,15 @@ class AngryBirdsProblem(Problem):
             #"birds": get_range_reward(new_stats["birds"], old_stats["birds"], 1, self._max_birds),
             "blocks": get_range_reward(new_stats["blocks"], old_stats["blocks"], 1, self._max_blocks),
             #"regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
+
+            #this part is for stability 
+            "stability": get_range_reward(new_stats["stability"], old_stats["stability"], -dimension, dimension)
         }
 
         return rewards["pig"] * self._rewards["pig"]  +\
             rewards["tnt"] * self._rewards["tnt"] +\
-            rewards["blocks"] * self._rewards["blocks"] + self._blocks_stability(self._map)
+            rewards["blocks"] * self._rewards["blocks"] +\
+            rewards["stability"] * self._rewards["blocks"] 
         # rewards["birds"] * self._rewards["birds"] +\
         #return self._get_variety_value(map, 1) + self._test_stability(map) + self._get_pig_potential(map, 1)
 
@@ -475,13 +523,14 @@ class AngryBirdsProblem(Problem):
             boolean: True if the level reached satisfying quality based on the stats and False otherwise
     """
     def get_episode_over(self, new_stats, old_stats):
-        percentage = 0.65
+        percentage = 0.75
         # return self._test_stability(map) == 1 and len(new_stats["empty"]) * 100 / self._height*self._width*100 < percentage
         #print((new_stats["empty"] / (self._height*self._width)) < percentage)
         return (new_stats["empty"] / (self._height*self._width)) < percentage and\
             new_stats["pig"] <= self._max_pigs and new_stats["pig"] > 0 and\
             new_stats["blocks"] <= self._max_blocks and\
-            new_stats["tnt"] <= self._max_tnt
+            new_stats["tnt"] <= self._max_tnt and\
+            new_stats["stability"] >= 0
         #return self._test_stability(map) == 1 and new_stats["empty"] * 100 / self._height*self._width*100 < percentage
 
     """

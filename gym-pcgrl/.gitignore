@@ -9,7 +9,7 @@
 #some files I do not need 
 gym_pcgrl/envs/reps/old_v2.py
 gym_pcgrl/envs/reps/temp.py
-
+gym-pcgrl/old_angrybirds_runs/
 # Local History for Visual Studio Code
 .history/
 

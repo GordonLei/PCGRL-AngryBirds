@@ -24,6 +24,7 @@ for t in range(1000000000):
   obs, reward, done, info = env2.step(action)
   env2.render('human')
 
+  #time.sleep(500)
 
   if done:
     print("Episode finished after {} timesteps".format(t+1))

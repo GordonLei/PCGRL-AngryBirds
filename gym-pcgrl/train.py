@@ -78,8 +78,8 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, **kwar
         n = n + 1
     log_dir = 'runs/{}_{}_{}'.format(exp_name, n, 'log')
     if not resume:
-        pass
-        #os.mkdir(log_dir)
+        #pass
+        os.mkdir(log_dir)
     else:
         model = load_model(log_dir)
     kwargs = {
