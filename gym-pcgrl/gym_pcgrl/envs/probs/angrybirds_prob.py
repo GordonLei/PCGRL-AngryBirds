@@ -342,7 +342,8 @@ class AngryBirdsProblem(Problem):
         if(stability_counter >= block_counter):
             print("STABLE LEVEL")
             #time.sleep(500)
-        return stability_counter
+        #return 1 if every block is stable; return varying degree of negative depending on how many blocks are unstable
+        return ( stability_counter -  (block_counter - 1))
     """
         Private function that test if current map is stable.
         Simulates the level to test for stability. 
@@ -499,7 +500,7 @@ class AngryBirdsProblem(Problem):
             #"regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
 
             #this part is for stability 
-            "stability": get_range_reward(new_stats["stability"], old_stats["stability"], -dimension, dimension)
+            "stability": get_range_reward(new_stats["stability"], old_stats["stability"], -2 * new_stats["blocks"], new_stats["blocks"])
         }
 
         return rewards["pig"] * self._rewards["pig"]  +\
@@ -524,6 +525,7 @@ class AngryBirdsProblem(Problem):
     """
     def get_episode_over(self, new_stats, old_stats):
         percentage = 0.75
+        #print(new_stats["empty"] / (self._height*self._width))
         # return self._test_stability(map) == 1 and len(new_stats["empty"]) * 100 / self._height*self._width*100 < percentage
         #print((new_stats["empty"] / (self._height*self._width)) < percentage)
         return (new_stats["empty"] / (self._height*self._width)) < percentage and\

@@ -397,15 +397,26 @@ class WideAngryBirdsRepresentation(Representation):
         boolean: True if the action change the map, False if nothing changed
     """
     def update(self, action):
-        change = [0,1][self._map[action[1]][action[0]] != action[2]]
+        #change = [0,1][self._map[action[1]][action[0]] != action[2]]
         #only update on an empty.pig, or corner of a block/tnt
-
-        #initial clean out the block or set it to something if it is empty 
+        change = False
+        #initial clean out the block or set it to something if it is empty. make sure it can only add valid blocks
         if(self._map[action[1]][action[0]] == empty):
-            self._map[action[1]][action[0]] = action[2]
+            if(action[2] < empty):
+                self._map[action[1]][action[0]] = action[2]
+            else: 
+                blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,rt_corner]
+                for each in blocks_by_size:
+                    #print("Attempt replace tnt_corner with ", each)
+                    if(not self.check_collision(each, action[1], action[0], self._map)):
+                        self._map[action[1]][action[0]] = each
+                        change = True
+                        break
+            change = True
         #start with pig or tnt_corner for now
         #elif (self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == tnt_corner):
         elif (self._map[action[1]][action[0]] < empty):
+            #print("allowed action: ", action[2])
             #keep track of the block that is to be changed
             curr_block_num = self._map[action[1]][action[0]]
             #erase pig 
@@ -574,11 +585,12 @@ class WideAngryBirdsRepresentation(Representation):
                     #print("Attempt replace tnt_corner with ", each)
                     if(not self.check_collision(each, action[1], action[0], self._map)):
                         self._map[action[1]][action[0]] = each
+                        change = True
                         break
             else:
                 #print("Initial replace tnt_corner good with ", action[2])
                 self._map[action[1]][action[0]] = action[2]
-
+                change = True
 
         #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)
