@@ -137,7 +137,7 @@ class AngryBirdsProblem(Problem):
         # max_enemies would be number of pigs
         self._max_pigs = 5
         self._max_birds = 5
-        self._max_blocks = 100
+        self._max_blocks = 50
         self._max_tnt = 3
 
         self._rewards = {
@@ -338,7 +338,7 @@ class AngryBirdsProblem(Problem):
                 #error
                 else:
                     print("ERROR in stability check", each[0])
-        #print(stability_counter)
+        #print(stability_counter, block_counter)
         if(stability_counter >= block_counter):
             print("STABLE LEVEL")
             #time.sleep(500)
@@ -500,8 +500,10 @@ class AngryBirdsProblem(Problem):
             #"regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
 
             #this part is for stability 
-            "stability": get_range_reward(new_stats["stability"], old_stats["stability"], -2 * new_stats["blocks"], new_stats["blocks"])
+            "stability": get_range_reward(new_stats["stability"], old_stats["stability"], 1,1)
         }
+
+        #print(new_stats["stability"], old_stats["stability"], "vs", self._blocks_stability(self._map))
 
         return rewards["pig"] * self._rewards["pig"]  +\
             rewards["tnt"] * self._rewards["tnt"] +\
@@ -524,7 +526,7 @@ class AngryBirdsProblem(Problem):
             boolean: True if the level reached satisfying quality based on the stats and False otherwise
     """
     def get_episode_over(self, new_stats, old_stats):
-        percentage = 0.75
+        percentage = 0.60
         #print(new_stats["empty"] / (self._height*self._width))
         # return self._test_stability(map) == 1 and len(new_stats["empty"]) * 100 / self._height*self._width*100 < percentage
         #print((new_stats["empty"] / (self._height*self._width)) < percentage)

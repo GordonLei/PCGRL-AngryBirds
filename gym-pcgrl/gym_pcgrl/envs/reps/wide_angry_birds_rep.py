@@ -594,7 +594,19 @@ class WideAngryBirdsRepresentation(Representation):
 
         #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)
-        self.fillin(self._map)
+        check = self.fillin(self._map)[1]
+        #print(check)
+        #if you did not add anything, try adding something based on the largest blocks 
+        if(not check):
+            print("did not fill in anything")
+            blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,rt_corner]
+            for each in blocks_by_size:
+                #print("Attempt replace tnt_corner with ", each)
+                if(not self.check_collision(each, action[1], action[0], self._map)):
+                    self._map[action[1]][action[0]] = each
+                    change = True
+                    break
+
         self.fix(self._map)
 
         return change, action[0], action[1]
@@ -708,6 +720,9 @@ class WideAngryBirdsRepresentation(Representation):
         x_length = len(map[0])
         y_length = len(map)
 
+        #variable to check if a new thing was added successfully 
+        added = False
+
         #each row is a y value
         #each col is a x value
         for y in range(y_length):
@@ -735,6 +750,7 @@ class WideAngryBirdsRepresentation(Representation):
                 #print("FILL-IN @", y,x, "BLOCK TYPE: ", each[0])
                 #rt
                 if each[0] == rt_corner:
+                    added = True
                     continue 
                 #rh
                 elif each[0] == rh_corner:
@@ -748,16 +764,18 @@ class WideAngryBirdsRepresentation(Representation):
                     map[y-1][x+1] = rh_r 
                     map[y-2][x+1] = rh_r
                     map[y-3][x+1] = rh_ur
-
+                    added = True
                 #rs
                 elif each[0] == rs_corner:
                     map[y][x+1] = rs_o1
+                    added = True
                     #map[x+1][y] = 8
                 #rm
                 elif each[0] == rm_corner:
                     map[y][x+1] = rm_o1
                     map[y][x+2] = rm_o2
                     map[y][x+3] = rm_o3
+                    added = True
 
                 #rl
                 elif each[0] == rl_corner:
@@ -765,25 +783,28 @@ class WideAngryBirdsRepresentation(Representation):
                     map[y][x+2] = rl_o2
                     map[y][x+3] = rl_o3
                     map[y][x+4] = rl_o4
+                    added = True
 
                 #rf
                 elif each[0] == rf_corner:
                     map[y-1][x] = rf_ul
                     map[y][x+1] = rf_lr
                     map[y-1][x+1] = rf_ur
+                    added = True
 
                 #tnt
                 elif each[0] == tnt_corner:
                     map[y-1][x] = tnt_ul
                     map[y][x+1] = tnt_lr
                     map[y-1][x+1] = tnt_ur
+                    added = True
 
                 #error
                 else:
                     print("ERROR in FI", each[0])
         
         #print(map)
-        return map
+        return (map,added)
 
 
     """
@@ -803,4 +824,4 @@ class WideAngryBirdsRepresentation(Representation):
 
         #FILL IN THE BLOCKS
         #print(map)
-        return self.fillin(new_map)
+        return self.fillin(new_map)[0]
