@@ -82,11 +82,11 @@ class AngryBirdsProblem(Problem):
         # probably table of how likely a certain tile would be generated for initial state
         self._prob = {
             "rt_corner":0.01,
-            "rh_corner":0.20,
-            "rs_corner":0.02,
-            "rm_corner":0.05,
-            "rl_corner":0.07,
-            "rf_corner":0.20,
+            "rh_corner":0.02,
+            "rs_corner":0.01,
+            "rm_corner":0.02,
+            "rl_corner":0.01,
+            "rf_corner":0.01,
             "tnt_corner":0.01,
 
             "empty":0.45,
@@ -137,15 +137,16 @@ class AngryBirdsProblem(Problem):
         # max_enemies would be number of pigs
         self._max_pigs = 5
         self._max_birds = 5
-        self._max_blocks = 50
+        self._max_blocks = 100
         self._max_tnt = 3
 
         self._rewards = {
             # "player": 3,
             # "bird": 3,
             "pig": 1,
-            "blocks": 5,
-            "tnt": 1
+            "blocks": 1,
+            "tnt": 1,
+            "stability": 5
         }
         self._map = [[]]
 
@@ -505,10 +506,17 @@ class AngryBirdsProblem(Problem):
 
         #print(new_stats["stability"], old_stats["stability"], "vs", self._blocks_stability(self._map))
 
+        #print(rewards["pig"] * self._rewards["pig"], rewards["tnt"] * self._rewards["tnt"], rewards["blocks"] * self._rewards["blocks"], rewards["stability"] * self._rewards["blocks"] )
+
+        #print(rewards["pig"] * self._rewards["pig"]  +\
+        #    rewards["tnt"] * self._rewards["tnt"] +\
+        #    rewards["blocks"] * self._rewards["blocks"] +\
+        #    rewards["stability"] * self._rewards["stability"] )
+
         return rewards["pig"] * self._rewards["pig"]  +\
             rewards["tnt"] * self._rewards["tnt"] +\
             rewards["blocks"] * self._rewards["blocks"] +\
-            rewards["stability"] * self._rewards["blocks"] 
+            rewards["stability"] * self._rewards["stability"] 
         # rewards["birds"] * self._rewards["birds"] +\
         #return self._get_variety_value(map, 1) + self._test_stability(map) + self._get_pig_potential(map, 1)
 
