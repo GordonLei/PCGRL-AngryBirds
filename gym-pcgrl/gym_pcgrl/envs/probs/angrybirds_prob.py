@@ -136,13 +136,11 @@ class AngryBirdsProblem(Problem):
         self._border_tile = "solid"
         # max_enemies would be number of pigs
         self._max_pigs = 5
-        self._max_birds = 5
+        #self._max_birds = 5
         self._max_blocks = 100
         self._max_tnt = 3
 
         self._rewards = {
-            # "player": 3,
-            # "bird": 3,
             "pig": 1,
             "blocks": 1,
             "tnt": 1,
@@ -212,7 +210,7 @@ class AngryBirdsProblem(Problem):
         super().adjust_param(**kwargs)
 
         self._max_pigs = kwargs.get('max_pigs', self._max_pigs)
-        self._max_birds = kwargs.get('max_birds', self._max_birds)
+        #self._max_birds = kwargs.get('max_birds', self._max_birds)
         self._max_blocks = kwargs.get('max_blocks', self._max_blocks)
         self._max_tnt = kwargs.get('max_tnt', self._max_tnt)
 
@@ -488,10 +486,6 @@ class AngryBirdsProblem(Problem):
             float: the current reward due to the change between the old map stats and the new map stats
     """
     def get_reward(self, new_stats, old_stats):
-        # 3rd value is min; 4th value is the max 
-
-        dimension = self._width*self._height
-
         rewards = {
             #"empty": get_range_reward(new_stats["empty"], old_stats["empty"], 1, 1),
             "pig": get_range_reward(new_stats["pig"], old_stats["pig"], 1, self._max_pigs),
@@ -503,15 +497,6 @@ class AngryBirdsProblem(Problem):
             #this part is for stability 
             "stability": get_range_reward(new_stats["stability"], old_stats["stability"], 1,1)
         }
-
-        #print(new_stats["stability"], old_stats["stability"], "vs", self._blocks_stability(self._map))
-
-        #print(rewards["pig"] * self._rewards["pig"], rewards["tnt"] * self._rewards["tnt"], rewards["blocks"] * self._rewards["blocks"], rewards["stability"] * self._rewards["blocks"] )
-
-        #print(rewards["pig"] * self._rewards["pig"]  +\
-        #    rewards["tnt"] * self._rewards["tnt"] +\
-        #    rewards["blocks"] * self._rewards["blocks"] +\
-        #    rewards["stability"] * self._rewards["stability"] )
 
         return rewards["pig"] * self._rewards["pig"]  +\
             rewards["tnt"] * self._rewards["tnt"] +\

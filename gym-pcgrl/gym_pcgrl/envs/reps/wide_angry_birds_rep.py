@@ -471,6 +471,8 @@ class WideAngryBirdsRepresentation(Representation):
         #initial clean out the block or set it to something if it is empty. make sure it can only add valid blocks
         if(self._map[action[1]][action[0]] == empty):
             if(action[2] < empty):
+                if (action[2] == rt_corner):
+                    change = True
                 self._map[action[1]][action[0]] = action[2]
                 change = self.fillin(self._map)[1]
                 #print("EMPTY check if added block", change)
@@ -484,6 +486,7 @@ class WideAngryBirdsRepresentation(Representation):
                         change = True
                         break
                 '''
+                
         #start with pig or tnt_corner for now
         #elif (self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == tnt_corner):
 
@@ -492,19 +495,18 @@ class WideAngryBirdsRepresentation(Representation):
             #print("SELECTED MIDDLE", self._map[action[1]][action[0]], action[1], action[0])
             cornerOfBlock = self.findCorner(self._map[action[1]][action[0]], action[1], action[0])
 
-            
-
-            #corners = [rs_corner,rm_corner,rl_corner,rf_corner,rh_corner,tnt_corner]
-            #print("CORNERS: ", "row = ",cornerOfBlock[0], "col", cornerOfBlock[1] )
-            #print(self._map[cornerOfBlock[0]][cornerOfBlock[1]] in corners)
             #findCorner returns (corner_row, corner_col) whereas update wants (col, row, action)
+            #print("selected middle of the block", action[2])
             self.update( (cornerOfBlock[1], cornerOfBlock[0], action[2]) )
 
-
-        elif (self._map[action[1]][action[0]] < empty):
+        #if you select a corner and the action is a valid action (you are not swapping to illegal block)
+        elif (self._map[action[1]][action[0]] < empty and action[2] < empty):
             #print("allowed action: ", action[2])
             #keep track of the block that is to be changed
             curr_block_num = self._map[action[1]][action[0]]
+
+            #print("attempt to do swap ", self._map[action[1]][action[0]], " to ", action[2])
+
             #if you try to replace the current block with itself, do not erase iteself
             if(action[2] == curr_block_num):
                 #print("do not erase itself")
@@ -512,9 +514,11 @@ class WideAngryBirdsRepresentation(Representation):
             #erase pig 
             elif(self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == rt_corner):
                 self._map[action[1]][action[0]] = empty
+                #print("erased pig")
             #erase tnt_corner
             elif(self._map[action[1]][action[0]] == tnt_corner):
                 try:
+                    #print("erased tnt")
                     if self._map[action[1]][action[0]] == tnt_corner:
                         #print("removed tc")
                         self._map[action[1]][action[0]] = empty
@@ -536,7 +540,7 @@ class WideAngryBirdsRepresentation(Representation):
             #erase rf_corner
             elif(self._map[action[1]][action[0]] == rf_corner):
                 try:
-
+                    #print("erased rf")
                     if self._map[action[1]][action[0]] == rf_corner:
                         #print("removed rf_c")
                         self._map[action[1]][action[0]] = empty
@@ -557,7 +561,7 @@ class WideAngryBirdsRepresentation(Representation):
             #erase rh_corner
             elif(self._map[action[1]][action[0]] == rh_corner):
                 try:
-
+                    #print("erased rh")
                     if self._map[action[1]][action[0]] == rh_corner:
                         #print("removed rf_c")
                         self._map[action[1]][action[0]] = empty
@@ -591,7 +595,7 @@ class WideAngryBirdsRepresentation(Representation):
             #erase rs_corner
             elif(self._map[action[1]][action[0]] == rs_corner):
                 try:
-
+                    #print("erased rs")
                     if self._map[action[1]][action[0]] == rs_corner:
                         #print("removed rs_c")
                         self._map[action[1]][action[0]] = empty
@@ -606,7 +610,7 @@ class WideAngryBirdsRepresentation(Representation):
             #erase rm_corner
             elif(self._map[action[1]][action[0]] == rm_corner):
                 try:
-
+                    #print("erased rm")
                     if self._map[action[1]][action[0]] == rm_corner:
                         #print("removed rm_c")
                         self._map[action[1]][action[0]] = empty
@@ -627,7 +631,7 @@ class WideAngryBirdsRepresentation(Representation):
             #erase rl_corner
             elif(self._map[action[1]][action[0]] == rl_corner):
                 try:
-
+                    #print("erased rl")
                     if self._map[action[1]][action[0]] == rl_corner:
                         #print("removed rl_c")
                         self._map[action[1]][action[0]] = empty
@@ -657,7 +661,12 @@ class WideAngryBirdsRepresentation(Representation):
 
             #print(action[2], curr_block_num)
 
+            #print("attempt to replace with", curr_block_name)
+
             #print(curr_block_name, "update start", action[2])
+
+            #print("check: ", action[2] == curr_block_num, action[2] > empty, self.check_collision(action[2], action[1], action[0], self._map))
+
             #if attempt to replace with itself, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
             if(action[2] == curr_block_num or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
                 change = False
@@ -674,6 +683,7 @@ class WideAngryBirdsRepresentation(Representation):
                 '''
             else:
                 #print("Initial replace tnt_corner good with ", action[2])
+                #print("attempt to fillin")
                 self._map[action[1]][action[0]] = action[2]
                 change = True
 
@@ -697,6 +707,7 @@ class WideAngryBirdsRepresentation(Representation):
 
         #try to remove phantom blocks
         self.fix(self._map)
+
         #print("UPDATE CHANGE: ", change)
         return change, action[0], action[1]
     
@@ -798,6 +809,7 @@ class WideAngryBirdsRepresentation(Representation):
             return False
         else:
             print("ERROR IN CC", type_block)
+            return True
 
     def fillin(self,map):
         coords = []
@@ -839,7 +851,7 @@ class WideAngryBirdsRepresentation(Representation):
                 #print("FILL-IN @", y,x, "BLOCK TYPE: ", each[0])
                 #rt
                 if each[0] == rt_corner:
-                    added = True
+                    #added = True
                     continue 
                 #rh
                 elif each[0] == rh_corner:
@@ -895,6 +907,7 @@ class WideAngryBirdsRepresentation(Representation):
                 #tnt
                 elif each[0] == tnt_corner:
                     #if this is filled in correctly, you actually did not add anything
+                    
                     if(map[y-1][x] != tnt_ul):
                         map[y-1][x] = tnt_ul
                         map[y][x+1] = tnt_lr
@@ -905,7 +918,7 @@ class WideAngryBirdsRepresentation(Representation):
                 else:
                     print("ERROR in FI", each[0])
         
-        #print(added)
+        #print("added: ", added)
         return (map,added)
 
 
