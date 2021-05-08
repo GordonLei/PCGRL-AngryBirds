@@ -387,6 +387,74 @@ class WideAngryBirdsRepresentation(Representation):
                     else:
                         print("ERROR in FIX", map[y][x] )
 
+    """ 
+    find the corner of the block 
+
+    returns (row,col)
+    """
+    def findCorner(self, blockName, row, col):
+        #rh components
+        rh_left = [rh_l, rh_ul]
+        rh_right = [rh_r, rh_lr, rh_ur]
+        #r thing rectangles components 
+        r_others = [rs_o1, rm_o1, rm_o2, rm_o3, rl_o1,rl_o2,rl_o3,rl_o4]
+        r_corners = [rs_corner, rm_corner, rl_corner]
+        #rf components 
+        rf_left = [rf_ul]
+        rf_right = [rf_lr, rf_ur]
+        #tnt components
+        tnt_left = [tnt_ul]
+        tnt_right = [tnt_lr, tnt_ur]
+
+
+        #rh
+        if (blockName in rh_left):
+            while self._map[row][col] !=  rh_corner:
+                #add one because you have to traverse to lower row
+                row += 1
+            return (row,col)
+        elif (blockName in rh_right):
+            if blockName == rh_lr: 
+                return (row,col - 1)
+            else:
+                while self._map[row][col] != rh_lr:
+                    row += 1
+                return (row,col - 1)
+        #r (long thin rectangles)
+        elif (blockName in r_others):
+            while self._map[row][col] not in r_corners:
+                col -= 1 
+            return (row,col)
+        #rf 
+        elif (blockName in rf_left):
+            while self._map[row][col] !=  rf_corner:
+                #add one because you have to traverse to lower row
+                row += 1
+            return (row,col)
+        elif (blockName in rf_right):
+            if blockName == rf_lr: 
+                return (row,col - 1)
+            else:
+                while self._map[row][col] != rf_lr:
+                    row += 1
+                return (row,col - 1)
+        #tnt 
+        elif (blockName in tnt_left):
+            while self._map[row][col] !=  tnt_corner:
+                #add one because you have to traverse to lower row
+                row += 1
+            return (row,col)
+        elif (blockName in tnt_right):
+            if blockName == tnt_lr: 
+                return (row,col - 1)
+            else:
+                while self._map[row][col] != tnt_lr:
+                    row += 1
+                return (row,col - 1)
+        else:
+            print("ERROR")
+            return (row, col)
+
     """
     Update the wide representation with the input action
 
@@ -404,7 +472,10 @@ class WideAngryBirdsRepresentation(Representation):
         if(self._map[action[1]][action[0]] == empty):
             if(action[2] < empty):
                 self._map[action[1]][action[0]] = action[2]
+                change = self.fillin(self._map)[1]
+                #print("EMPTY check if added block", change)
             else: 
+                '''
                 blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,rt_corner]
                 for each in blocks_by_size:
                     #print("Attempt replace tnt_corner with ", each)
@@ -412,28 +483,38 @@ class WideAngryBirdsRepresentation(Representation):
                         self._map[action[1]][action[0]] = each
                         change = True
                         break
-            change = True
+                '''
         #start with pig or tnt_corner for now
         #elif (self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == tnt_corner):
+
+        #if you select the middle of a block 
+        elif (self._map[action[1]][action[0]] > empty):
+            #print("SELECTED MIDDLE", self._map[action[1]][action[0]], action[1], action[0])
+            cornerOfBlock = self.findCorner(self._map[action[1]][action[0]], action[1], action[0])
+
+            
+
+            #corners = [rs_corner,rm_corner,rl_corner,rf_corner,rh_corner,tnt_corner]
+            #print("CORNERS: ", "row = ",cornerOfBlock[0], "col", cornerOfBlock[1] )
+            #print(self._map[cornerOfBlock[0]][cornerOfBlock[1]] in corners)
+            #findCorner returns (corner_row, corner_col) whereas update wants (col, row, action)
+            self.update( (cornerOfBlock[1], cornerOfBlock[0], action[2]) )
+
+
         elif (self._map[action[1]][action[0]] < empty):
             #print("allowed action: ", action[2])
             #keep track of the block that is to be changed
             curr_block_num = self._map[action[1]][action[0]]
-            #erase pig 
-            if(self._map[action[1]][action[0]] == pig):
+            #if you try to replace the current block with itself, do not erase iteself
+            if(action[2] == curr_block_num):
+                #print("do not erase itself")
                 pass
+            #erase pig 
+            elif(self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == rt_corner):
+                self._map[action[1]][action[0]] = empty
             #erase tnt_corner
             elif(self._map[action[1]][action[0]] == tnt_corner):
-                #print(self._map)
-                #print("attempt remove tnt_corner at ", action[1], action[0])
-                #remove the tnt_corner 
-                #remove the TNT_corner on the map
                 try:
-                    #print("curr element at: ", action[1], action[0], " is ", self._map[action[1]][action[0]])
-                    #print("curr element at: ", action[1] - 1, action[0], " is ", self._map[action[1] - 1][action[0]])
-                    #print("curr element at: ", action[1], action[0] + 1, " is ", self._map[action[1]][action[0] + 1])
-                    #print("curr element at: ", action[1] - 1, action[0] + 1, " is ", self._map[action[1] - 1][action[0] + 1])
-                    #print(action[1], action[0])
                     if self._map[action[1]][action[0]] == tnt_corner:
                         #print("removed tc")
                         self._map[action[1]][action[0]] = empty
@@ -574,10 +655,13 @@ class WideAngryBirdsRepresentation(Representation):
             #print("curr_block_num: ", curr_block_num)
             curr_block_name = block_array[curr_block_num]
 
+            #print(action[2], curr_block_num)
 
             #print(curr_block_name, "update start", action[2])
-            #if attempt to replace with a tnt_corner, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
+            #if attempt to replace with itself, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
             if(action[2] == curr_block_num or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
+                change = False
+                '''
                 blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,empty]
                 if curr_block_num in blocks_by_size:
                     blocks_by_size.remove(curr_block_num)
@@ -587,6 +671,7 @@ class WideAngryBirdsRepresentation(Representation):
                         self._map[action[1]][action[0]] = each
                         change = True
                         break
+                '''
             else:
                 #print("Initial replace tnt_corner good with ", action[2])
                 self._map[action[1]][action[0]] = action[2]
@@ -594,9 +679,11 @@ class WideAngryBirdsRepresentation(Representation):
 
         #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)
-        check = self.fillin(self._map)[1]
+        self.fillin(self._map)
         #print(check)
         #if you did not add anything, try adding something based on the largest blocks 
+
+        '''
         if(not check):
             print("did not fill in anything")
             blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,rt_corner]
@@ -606,9 +693,11 @@ class WideAngryBirdsRepresentation(Representation):
                     self._map[action[1]][action[0]] = each
                     change = True
                     break
+        '''
 
+        #try to remove phantom blocks
         self.fix(self._map)
-
+        #print("UPDATE CHANGE: ", change)
         return change, action[0], action[1]
     
     """
@@ -754,56 +843,69 @@ class WideAngryBirdsRepresentation(Representation):
                     continue 
                 #rh
                 elif each[0] == rh_corner:
-                    #subtract to go upwards the row/height
-                    map[y-1][x] = rh_l
-                    map[y-2][x] = rh_l
-                    map[y-3][x] = rh_ul 
+                    
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y-1][x] != rh_l):
+                        #subtract to go upwards the row/height
+                        map[y-1][x] = rh_l
+                        map[y-2][x] = rh_l
+                        map[y-3][x] = rh_ul 
 
-                    #x stay + to move to the right
-                    map[y][x+1] = rh_lr
-                    map[y-1][x+1] = rh_r 
-                    map[y-2][x+1] = rh_r
-                    map[y-3][x+1] = rh_ur
-                    added = True
+                        #x stay + to move to the right
+                        map[y][x+1] = rh_lr
+                        map[y-1][x+1] = rh_r 
+                        map[y-2][x+1] = rh_r
+                        map[y-3][x+1] = rh_ur
+                        added = True
                 #rs
                 elif each[0] == rs_corner:
-                    map[y][x+1] = rs_o1
-                    added = True
-                    #map[x+1][y] = 8
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y][x+1] != rs_o1):
+                        map[y][x+1] = rs_o1
+                        added = True
+                        #map[x+1][y] = 8
                 #rm
                 elif each[0] == rm_corner:
-                    map[y][x+1] = rm_o1
-                    map[y][x+2] = rm_o2
-                    map[y][x+3] = rm_o3
-                    added = True
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y][x+1] != rm_o1):
+                        map[y][x+1] = rm_o1
+                        map[y][x+2] = rm_o2
+                        map[y][x+3] = rm_o3
+                        added = True
 
                 #rl
                 elif each[0] == rl_corner:
-                    map[y][x+1] = rl_o1
-                    map[y][x+2] = rl_o2
-                    map[y][x+3] = rl_o3
-                    map[y][x+4] = rl_o4
-                    added = True
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y][x+1] != rl_o1):
+                        map[y][x+1] = rl_o1
+                        map[y][x+2] = rl_o2
+                        map[y][x+3] = rl_o3
+                        map[y][x+4] = rl_o4
+                        added = True
 
                 #rf
                 elif each[0] == rf_corner:
-                    map[y-1][x] = rf_ul
-                    map[y][x+1] = rf_lr
-                    map[y-1][x+1] = rf_ur
-                    added = True
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y-1][x] != rf_ul):
+                        map[y-1][x] = rf_ul
+                        map[y][x+1] = rf_lr
+                        map[y-1][x+1] = rf_ur
+                        added = True
 
                 #tnt
                 elif each[0] == tnt_corner:
-                    map[y-1][x] = tnt_ul
-                    map[y][x+1] = tnt_lr
-                    map[y-1][x+1] = tnt_ur
-                    added = True
+                    #if this is filled in correctly, you actually did not add anything
+                    if(map[y-1][x] != tnt_ul):
+                        map[y-1][x] = tnt_ul
+                        map[y][x+1] = tnt_lr
+                        map[y-1][x+1] = tnt_ur
+                        added = True
 
                 #error
                 else:
                     print("ERROR in FI", each[0])
         
-        #print(map)
+        #print(added)
         return (map,added)
 
 

@@ -82,14 +82,14 @@ class AngryBirdsProblem(Problem):
         # probably table of how likely a certain tile would be generated for initial state
         self._prob = {
             "rt_corner":0.01,
-            "rh_corner":0.02,
-            "rs_corner":0.01,
-            "rm_corner":0.02,
-            "rl_corner":0.01,
-            "rf_corner":0.01,
+            "rh_corner":0.20,
+            "rs_corner":0.02,
+            "rm_corner":0.05,
+            "rl_corner":0.07,
+            "rf_corner":0.20,
             "tnt_corner":0.01,
 
-            "empty":0.90,
+            "empty":0.45,
             "solid":0.00,
 
             
