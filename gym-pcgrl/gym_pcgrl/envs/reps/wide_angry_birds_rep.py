@@ -76,7 +76,7 @@ class WideAngryBirdsRepresentation(Representation):
     """
     def get_action_space(self, width, height, num_tiles):
         #return spaces.MultiDiscrete([width, height, num_tiles])
-        return spaces.MultiDiscrete([width, height, 8])
+        return spaces.MultiDiscrete([width, height, empty])
 
     """
     Get the observation space used by the wide representation
@@ -471,10 +471,10 @@ class WideAngryBirdsRepresentation(Representation):
         #initial clean out the block or set it to something if it is empty. make sure it can only add valid blocks
         if(self._map[action[1]][action[0]] == empty):
             if(action[2] < empty):
-                if (action[2] == rt_corner):
-                    change = True
                 self._map[action[1]][action[0]] = action[2]
                 change = self.fillin(self._map)[1]
+                if (action[2] == rt_corner):
+                    change = True
                 #print("EMPTY check if added block", change)
             else: 
                 '''
@@ -486,6 +486,8 @@ class WideAngryBirdsRepresentation(Representation):
                         change = True
                         break
                 '''
+                random_choice = random.randint(rt_corner, empty)
+                #self.update( (action[0], action[1], random_choice) )
                 
         #start with pig or tnt_corner for now
         #elif (self._map[action[1]][action[0]] == pig or self._map[action[1]][action[0]] == tnt_corner):
@@ -497,7 +499,7 @@ class WideAngryBirdsRepresentation(Representation):
 
             #findCorner returns (corner_row, corner_col) whereas update wants (col, row, action)
             #print("selected middle of the block", action[2])
-            self.update( (cornerOfBlock[1], cornerOfBlock[0], action[2]) )
+            change = self.update( (cornerOfBlock[1], cornerOfBlock[0], action[2]))[0]
 
         #if you select a corner and the action is a valid action (you are not swapping to illegal block)
         elif (self._map[action[1]][action[0]] < empty and action[2] < empty):
@@ -665,7 +667,7 @@ class WideAngryBirdsRepresentation(Representation):
 
             #print(curr_block_name, "update start", action[2])
 
-            #print("check: ", action[2] == curr_block_num, action[2] > empty, self.check_collision(action[2], action[1], action[0], self._map))
+            print("check: ", action[2] == curr_block_num, action[2] > empty, self.check_collision(action[2], action[1], action[0], self._map))
 
             #if attempt to replace with itself, does an illegal block (block that isnt a corner), or the new block to replace has a collission, 
             if(action[2] == curr_block_num or (action[2] > empty) or self.check_collision(action[2], action[1], action[0], self._map)):
@@ -681,11 +683,14 @@ class WideAngryBirdsRepresentation(Representation):
                         change = True
                         break
                 '''
+                random_choice = random.randint(rt_corner, empty)
+                #self.update( (action[0], action[1], random_choice) )
             else:
                 #print("Initial replace tnt_corner good with ", action[2])
-                #print("attempt to fillin")
+                print("attempt to fillin")
                 self._map[action[1]][action[0]] = action[2]
                 change = True
+                print("change is currently: ", change)
 
         #print("CURRENT MAP:\n", self._map)
         self.writeXML(self._map)
@@ -707,7 +712,8 @@ class WideAngryBirdsRepresentation(Representation):
 
         #try to remove phantom blocks
         self.fix(self._map)
-
+        print("last change is : ", change)
+        print("===")
         #print("UPDATE CHANGE: ", change)
         return change, action[0], action[1]
     
