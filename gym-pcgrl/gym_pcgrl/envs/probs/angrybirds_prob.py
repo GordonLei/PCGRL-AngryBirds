@@ -141,9 +141,9 @@ class AngryBirdsProblem(Problem):
         self._max_tnt = 3
 
         self._rewards = {
-            "pig": 1,
-            "blocks": 1,
-            "tnt": 1,
+            "pig": 3,
+            "blocks": 2,
+            "tnt": 4,
             "stability": 5
         }
         self._map = [[]]
@@ -497,6 +497,11 @@ class AngryBirdsProblem(Problem):
             #this part is for stability 
             "stability": get_range_reward(new_stats["stability"], old_stats["stability"], 1,1)
         }
+
+        #print(rewards["pig"] * self._rewards["pig"],
+        #    rewards["tnt"] * self._rewards["tnt"],
+        #    rewards["blocks"] * self._rewards["blocks"],
+        #    rewards["stability"] * self._rewards["stability"])
 
         return rewards["pig"] * self._rewards["pig"]  +\
             rewards["tnt"] * self._rewards["tnt"] +\
