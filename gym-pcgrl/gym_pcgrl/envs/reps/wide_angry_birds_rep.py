@@ -573,11 +573,13 @@ class WideAngryBirdsRepresentation(Representation):
         width = len(self._map[0])
         #check if the selected location is a valid tile 
         if (action[1] >= height or action[0] >= width):
+            '''
             #tile is invalid. randomly select a block to ensure a change happens 
             random_choice = random.randint(rt_corner, rf_corner)
             #change = self.update( (cornerOfBlock[1], cornerOfBlock[0], cornerOfBlock[2]))[0]
             change = self.update(( random.randint(0, width - 1), random.randint(0, height - 1), random_choice))[0]
             pass
+            '''
 
 
         #check if the selected location is empty

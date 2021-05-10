@@ -138,6 +138,7 @@ class AngryBirdsProblem(Problem):
         self._max_pigs = 5
         #self._max_birds = 5
         self._max_blocks = 100
+        self._min_blocks = 50
         self._max_tnt = 3
 
         self._rewards = {
@@ -212,6 +213,7 @@ class AngryBirdsProblem(Problem):
         self._max_pigs = kwargs.get('max_pigs', self._max_pigs)
         #self._max_birds = kwargs.get('max_birds', self._max_birds)
         self._max_blocks = kwargs.get('max_blocks', self._max_blocks)
+        self._min_blocks = kwargs.get('min_blocks', self._min_blocks)
         self._max_tnt = kwargs.get('max_tnt', self._max_tnt)
 
 
@@ -491,7 +493,7 @@ class AngryBirdsProblem(Problem):
             "pig": get_range_reward(new_stats["pig"], old_stats["pig"], 1, self._max_pigs),
             "tnt": get_range_reward(new_stats["tnt"], old_stats["tnt"], 0, self._max_tnt),
             #"birds": get_range_reward(new_stats["birds"], old_stats["birds"], 1, self._max_birds),
-            "blocks": get_range_reward(new_stats["blocks"], old_stats["blocks"], 1, self._max_blocks),
+            "blocks": get_range_reward(new_stats["blocks"], old_stats["blocks"], 50, self._max_blocks),
             #"regions": get_range_reward(new_stats["regions"], old_stats["regions"], 1, 1)
 
             #this part is for stability 
@@ -530,6 +532,7 @@ class AngryBirdsProblem(Problem):
         #print((new_stats["empty"] / (self._height*self._width)) < percentage)
         return (new_stats["empty"] / (self._height*self._width)) < percentage and\
             new_stats["pig"] <= self._max_pigs and new_stats["pig"] > 0 and\
+            new_stats["blocks"] >= self._min_blocks and\
             new_stats["blocks"] <= self._max_blocks and\
             new_stats["tnt"] <= self._max_tnt and\
             new_stats["stability"] >= 0
