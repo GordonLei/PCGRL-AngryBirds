@@ -388,11 +388,13 @@ class WideAngryBirdsRepresentation(Representation):
                         print("ERROR in FIX", map[y][x] )
 
     """ 
-    find the corner of the block 
+    find the corner of the block if the block
 
-    returns (row,col)
+    if the filledIn boolean = True, it means the block is filled-in in the map. 
+        if this is False, then do some math to find the potential corner of the map and place it 
+    returns (row,col,blockNumber)
     """
-    def findCorner(self, blockName, row, col):
+    def findCorner(self, blockName, row, col, filledIn):
         #rh components
         rh_left = [rh_l, rh_ul]
         rh_right = [rh_r, rh_lr, rh_ur]
@@ -405,55 +407,155 @@ class WideAngryBirdsRepresentation(Representation):
         #tnt components
         tnt_left = [tnt_ul]
         tnt_right = [tnt_lr, tnt_ur]
+        #corners 
+        corners = [rt_corner, rs_corner, rm_corner, rl_corner, rf_corner, rh_corner, tnt_corner]
+        #print("filledIn is ", filledIn)
 
-
+        #check if you somehow selected a corner 
+        if (blockName in corners):
+            return (row, col, blockName)
         #rh
-        if (blockName in rh_left):
-            while self._map[row][col] !=  rh_corner:
-                #add one because you have to traverse to lower row
-                row += 1
-            return (row,col)
-        elif (blockName in rh_right):
-            if blockName == rh_lr: 
-                return (row,col - 1)
-            else:
-                while self._map[row][col] != rh_lr:
+        elif (blockName in rh_left):
+            if(filledIn):
+                while self._map[row][col] !=  rh_corner:
+                    #add one because you have to traverse to lower row
                     row += 1
-                return (row,col - 1)
+                return (row,col, rh_corner)
+            else:
+                #rh_l
+                if(blockName == rh_l):
+                    #print("rh_l old value is ", row, col)
+                    #print("rh_l returned: ", row + 2,col, rh_corner)
+                    return (row + 2,col, rh_corner)
+                #rh_ul
+                else:
+                    #print("rh_ul old value is ", row, col)
+                    #print("rh_ul returned: ", row + 3,col, rh_corner)
+                    return (row + 3,col, rh_corner)
+        elif (blockName in rh_right):
+            if(filledIn):
+                if blockName == rh_lr: 
+                    return (row,col - 1, rh_corner)
+                else:
+                    while self._map[row][col] != rh_lr:
+                        row += 1
+                    return (row,col - 1, rh_corner)
+            else:
+                #rh_lr
+                if blockName == rh_lr: 
+                    #print("rh_lr old value is ", row, col)
+                    #print("rh_lr returned: ", row,col - 1, rh_corner)
+                    return (row,col - 1, rh_corner)
+                #rh_r
+                elif blockName == rh_r:
+                    #print("rh_r old value is ", row, col)
+                    #print("rh_r returned: ", row + 2,col - 1, rh_corner)
+                    return (row + 2,col - 1, rh_corner)
+                #rh_ur
+                else: 
+                    #print("rh_ur old value is ", row, col)
+                    #print("rh_ur returned: ", row + 3,col - 1, rh_corner)
+                    return (row + 3,col - 1, rh_corner)
         #r (long thin rectangles)
         elif (blockName in r_others):
-            while self._map[row][col] not in r_corners:
-                col -= 1 
-            return (row,col)
+            #find what type of rectangle this is 
+            curr_block_ind = r_others.index(blockName)
+            curr_block_name = -1
+            if curr_block_ind >= 4:
+                curr_block_name = rl_corner
+            elif curr_block_ind >= 1:
+                curr_block_name = rm_corner
+            else:
+                curr_block_name = rs_corner
+            if(filledIn):
+                while self._map[row][col] not in r_corners:
+                    col -= 1 
+                return (row,col, curr_block_name)
+            else: 
+                #rs
+                if curr_block_name == rs_corner:
+                    # add one to find the location of the corner as if blockName = rs_01 
+                    #   rs_o1 - rs_o1 = 0
+                    #   0 + 1 = 1 and rs_o1 is 1 away from rs_corner location-wise on the map 
+                    diff = (blockName - rs_o1) + 1 
+                    return (row, col - diff, curr_block_name)
+                
+                #rm
+                elif curr_block_name == rm_corner:
+                    diff = (blockName - rm_o1) + 1 
+                    return (row, col - diff, curr_block_name)
+                #rl
+                elif curr_block_name == rl_corner:
+                    diff = (blockName - rl_o1) + 1 
+                    return (row, col - diff, curr_block_name)
+
         #rf 
         elif (blockName in rf_left):
-            while self._map[row][col] !=  rf_corner:
-                #add one because you have to traverse to lower row
-                row += 1
-            return (row,col)
-        elif (blockName in rf_right):
-            if blockName == rf_lr: 
-                return (row,col - 1)
-            else:
-                while self._map[row][col] != rf_lr:
+            if(filledIn):
+                while self._map[row][col] !=  rf_corner:
+                    #add one because you have to traverse to lower row
                     row += 1
-                return (row,col - 1)
+                return (row,col, rf_corner)
+
+            else:
+                #rf_ul
+                #print("rf_ul old value is ", row, col)
+                #print("rf_ul respondes with: ", (row + 1, col, rf_corner))
+                return (row + 1, col, rf_corner)
+        elif (blockName in rf_right):
+            if(filledIn):
+                if blockName == rf_lr: 
+                    return (row,col - 1, rf_corner)
+                else:
+                    while self._map[row][col] != rf_lr:
+                        row += 1
+                    return (row,col - 1,rf_corner)
+            else:
+                #rf_lr
+                if blockName == rf_lr: 
+                    #print("rf_lr old value is ", row, col)
+                    #print("rf_lr respondes with: ", (row, col - 1, rf_corner))
+                    return (row,col - 1, rf_corner)
+                #rf_ur
+                else:
+                    #print("rf_ur old value is ", row, col)
+                    #print("rf_ur respondes with: ", (row + 1, col - 1, rf_corner))
+                    return (row + 1,col - 1, rf_corner)
+
         #tnt 
         elif (blockName in tnt_left):
-            while self._map[row][col] !=  tnt_corner:
-                #add one because you have to traverse to lower row
-                row += 1
-            return (row,col)
-        elif (blockName in tnt_right):
-            if blockName == tnt_lr: 
-                return (row,col - 1)
-            else:
-                while self._map[row][col] != tnt_lr:
+            if(filledIn):
+                while self._map[row][col] !=  tnt_corner:
+                    #add one because you have to traverse to lower row
                     row += 1
-                return (row,col - 1)
+                return (row,col,tnt_corner)
+            else:
+                #tnt_ul
+                #print("tnt_ul old value is ", row, col)
+                #print("tnt_ul respondes with: ", (row + 1, col, tnt_corner))
+                return (row + 1,col,tnt_corner)
+        elif (blockName in tnt_right):
+            if(filledIn):
+                if blockName == tnt_lr: 
+                    return (row,col - 1,tnt_corner)
+                else:
+                    while self._map[row][col] != tnt_lr:
+                        row += 1
+                    return (row,col - 1,tnt_corner)
+            else:
+                #tnt_lr
+                if blockName == tnt_lr: 
+                    #print("tnt_lr old value is ", row, col)
+                    #print("tnt_lr respondes with: ", (row, col - 1, tnt_corner))
+                    return (row,col - 1,tnt_corner)
+                #tnt_ur
+                else:
+                    #print("tnt_ur old value is ", row, col)
+                    #print("tnt_ur respondes with: ", (row + 1, col - 1, tnt_corner))
+                    return (row + 1,col - 1,tnt_corner)
         else:
-            print("ERROR")
-            return (row, col)
+            #print("ERROR in FindCorner: ", blockName)
+            return (row, col,-1)
 
     """
     Update the wide representation with the input action
@@ -466,8 +568,20 @@ class WideAngryBirdsRepresentation(Representation):
     """
     def update(self, action):
         change = False
+
+        height = len(self._map)
+        width = len(self._map[0])
+        #check if the selected location is a valid tile 
+        if (action[1] >= height or action[0] >= width):
+            #tile is invalid. randomly select a block to ensure a change happens 
+            random_choice = random.randint(rt_corner, rf_corner)
+            #change = self.update( (cornerOfBlock[1], cornerOfBlock[0], cornerOfBlock[2]))[0]
+            change = self.update(( random.randint(0, width - 1), random.randint(0, height - 1), random_choice))[0]
+            pass
+
+
         #check if the selected location is empty
-        if(self._map[action[1]][action[0]] == empty):
+        elif(self._map[action[1]][action[0]] == empty):
             #if valid action, take that action
             if(action[2] < empty):
                 self._map[action[1]][action[0]] = action[2]
@@ -475,7 +589,7 @@ class WideAngryBirdsRepresentation(Representation):
                 if (action[2] == rt_corner):
                     change = True
             #else attempt to pick a valid option
-            else: 
+            elif (action[2] != solid and action[2] > empty): 
                 #this was used to make the "smart" decision. removed for now
                 '''
                 blocks_by_size = [rh_corner,rl_corner,rm_corner,rf_corner,rs_corner,rt_corner]
@@ -486,12 +600,22 @@ class WideAngryBirdsRepresentation(Representation):
                         change = True
                         break
                 '''
-                random_choice = random.randint(rt_corner, rf_corner)
+
+                #this means action[2] is NOT the corner of a block 
+                #print("Insert illegal block", action[2],  " at row: ", action[1], " col: ", action[0])
+                cornerOfBlock = self.findCorner(action[2], action[1], action[0], False)
+                #findCorner returns (corner_row, corner_col, blockNumber)
+                #print("Block is  ", cornerOfBlock[2], "located at row: ", cornerOfBlock[0], " col: ", cornerOfBlock[1])
+                change = self.update( (cornerOfBlock[1], cornerOfBlock[0], cornerOfBlock[2]))[0]
+
+                #random_choice = random.randint(rt_corner, rf_corner)
                 #self.update( (action[0], action[1], random_choice) )
+
+
         #if you select the middle of a block, traverse to the corner of the block 
         elif (self._map[action[1]][action[0]] > empty):
-            cornerOfBlock = self.findCorner(self._map[action[1]][action[0]], action[1], action[0])
-            #findCorner returns (corner_row, corner_col) whereas update wants (col, row, action)
+            cornerOfBlock = self.findCorner(self._map[action[1]][action[0]], action[1], action[0], True)
+            #findCorner returns (corner_row, corner_col, blockNumber) whereas update wants (col, row, action)
             change = self.update( (cornerOfBlock[1], cornerOfBlock[0], action[2]))[0]
 
         #if you select a corner and the action is a valid action (you are not swapping to illegal block or want to "erase" the block)
@@ -673,8 +797,16 @@ class WideAngryBirdsRepresentation(Representation):
                         change = True
                         break
                 '''
+
+                #this means action[2] is NOT the corner of a block 
+                #print("Insert illegal block", action[2],  " at row: ", action[1], " col: ", action[0])
+                cornerOfBlock = self.findCorner(action[2], action[1], action[0], False)
+                #findCorner returns (corner_row, corner_col, blockNumber)
+                #print("Block is  ", cornerOfBlock[2], "located at row: ", cornerOfBlock[0], " col: ", cornerOfBlock[1])
+                change = self.update( (cornerOfBlock[1], cornerOfBlock[0], cornerOfBlock[2]))[0]
+
                 #random fix
-                random_choice = random.randint(rt_corner, rf_corner)
+                #random_choice = random.randint(rt_corner, rf_corner)
                 #self.update( (action[0], action[1], random_choice) )
             else:
                 #valid change, now reflect the change
